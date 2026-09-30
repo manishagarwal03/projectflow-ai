@@ -9,6 +9,15 @@
       "headers": {
         "Authorization": "Bearer {env:GITHUB_PERSONAL_ACCESS_TOKEN}"
       }
+    },
+    "projectflow": {
+      "type": "local",
+      "command": [
+        "./projectflow-mcp/.venv-mcp/bin/mcp",
+        "run",
+        "./projectflow-mcp/server.py"
+      ],
+      "enabled": true
     }
   }
 }

@@ -272,3 +272,21 @@ multiple future tasks.
 
 Before proposing a new instruction, check whether an existing
 instruction already covers it.
+
+## Context Management
+
+Do not scan or read the entire codebase by default.
+
+For each task:
+
+1. Read the relevant requirement from the blueprint.
+2. Identify likely affected areas using filenames, directory structure,
+   code search, symbols, imports and references.
+3. Read only the files needed to understand and implement the change.
+4. Expand to additional files only when dependencies or impact require it.
+5. Prefer targeted search over broad repository scanning.
+
+Before reading a large number of files, explain why broader context is
+necessary.
+
+Do not load unrelated application areas into context.
