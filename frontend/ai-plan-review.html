@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Plan Review - ProjectFlow AI</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <aside class="sidebar">
+      <div class="sidebar-logo">ProjectFlow AI</div>
+      <nav>
+        <ul class="sidebar-nav">
+          <li><a href="projects.html">📊 Projects</a></li>
+          <li><a href="agent-runs.html">🤖 Agent Runs</a></li>
+          <li><a href="integrations.html">🔗 Integrations</a></li>
+          <li><a href="#" id="logout-btn">🚪 Logout</a></li>
+        </ul>
+      </nav>
+      <div class="mt-lg">
+        <button id="theme-toggle" class="theme-toggle">🌙 Dark</button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="header">
+        <div>
+          <h1>🤖 AI Plan Review</h1>
+          <p class="text-secondary">Review and select subtask suggestions</p>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-danger" id="reject-btn">Reject All</button>
+          <button class="btn btn-primary" id="accept-btn">Accept Selected</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">Planning Result</div>
+        <div id="plan-result">
+          <div class="spinner"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <input type="checkbox" id="select-all"> Select All Suggestions
+        </div>
+        <div id="suggestions-container">
+          <div class="spinner"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/theme.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/navigation.js"></script>
+  <script>
+    requireAuth();
+    document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+
+    const agentRunId = getQueryParam('agent_run_id');
+    if (!agentRunId) {
+      window.location.href = 'projects.html';
+    }
+
+    let agentRun = null;
+    let suggestions = [];
+
+    async function loadAgentRun() {
+      try {
+        agentRun = await api.getAgentRun(agentRunId);
+        
+        // Display agent run info
+        const resultContainer = document.getElementById('plan-result');
+        resultContainer.innerHTML = `
+          <div class="mb-md">
+            <strong>Status:</strong> <span class="badge ${getStatusBadgeClass(agentRun.status)}">${formatStatusLabel(agentRun.status)}</span>
+          </div>
+          <div class="mb-md">
+            <strong>Agent Type:</strong> ${formatStatusLabel(agentRun.agent_type)}
+          </div>
+          <div class="mb-md">
+            <strong>Duration:</strong> ${agentRun.duration_ms ? agentRun.duration_ms + 'ms' : 'N/A'}
+          </div>
+          <div class="mb-md">
+            <strong>Output:</strong><br>
+            <p class="text-secondary">${escapeHtml(agentRun.output || 'No output')}</p>
+          </div>
+          ${agentRun.error ? `
+          <div class="alert alert-error">
+            <strong>Error:</strong> ${escapeHtml(agentRun.error)}
+          </div>
+          ` : ''}
+        `;
+
+        // Display suggestions
+        suggestions = agentRun.suggestions.filter(s => s.status === 'pending');
+        displaySuggestions();
+        
+      } catch (error) {
+        showError('Failed to load agent run: ' + error.message);
+      }
+    }
+
+    function displaySuggestions() {
+      const container = document.getElementById('suggestions-container');
+      
+      if (suggestions.length === 0) {
+        container.innerHTML = '<p class="text-secondary">No pending suggestions</p>';
+        document.getElementById('accept-btn').disabled = true;
+        return;
+      }
+
+      const html = suggestions.map(suggestion => `
+        <div class="card" style="margin-bottom: 16px;">
+          <div class="flex-between">
+            <div>
+              <input type="checkbox" class="suggestion-checkbox" data-id="${suggestion.id}" id="suggestion-${suggestion.id}">
+              <label for="suggestion-${suggestion.id}" style="margin-left: 8px;">
+                <strong>${escapeHtml(suggestion.title)}</strong>
+              </label>
+            </div>
+            <span class="badge ${getStatusBadgeClass(suggestion.suggestion_type)}">${formatStatusLabel(suggestion.suggestion_type)}</span>
+          </div>
+          ${suggestion.description ? `
+          <p class="text-secondary mt-sm" style="margin-left: 28px;">
+            ${escapeHtml(suggestion.description)}
+          </p>
+          ` : ''}
+        </div>
+      `).join('');
+      
+      container.innerHTML = html;
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function getSelectedSuggestionIds() {
+      const checkboxes = document.querySelectorAll('.suggestion-checkbox:checked');
+      return Array.from(checkboxes).map(cb => cb.getAttribute('data-id'));
+    }
+
+    // Event listeners
+    document.getElementById('select-all').addEventListener('change', (e) => {
+      const checkboxes = document.querySelectorAll('.suggestion-checkbox');
+      checkboxes.forEach(cb => cb.checked = e.target.checked);
+    });
+
+    document.getElementById('accept-btn').addEventListener('click', async () => {
+      const selectedIds = getSelectedSuggestionIds();
+      
+      if (selectedIds.length === 0) {
+        showError('Please select at least one suggestion to accept');
+        return;
+      }
+
+      try {
+        const result = await api.acceptSuggestions(agentRunId, selectedIds);
+        showSuccess(`Successfully created ${result.created_subtasks.length} subtask(s)!`);
+        
+        setTimeout(() => {
+          window.location.href = `task-detail.html?id=${agentRun.task_id}`;
+        }, 1500);
+      } catch (error) {
+        showError('Failed to accept suggestions: ' + error.message);
+      }
+    });
+
+    document.getElementById('reject-btn').addEventListener('click', async () => {
+      if (!confirm('Are you sure you want to reject this plan?')) {
+        return;
+      }
+
+      try {
+        await api.rejectPlan(agentRunId);
+        showInfo('Plan rejected');
+        
+        setTimeout(() => {
+          window.location.href = `task-detail.html?id=${agentRun.task_id}`;
+        }, 1000);
+      } catch (error) {
+        showError('Failed to reject plan: ' + error.message);
+      }
+    });
+
+    loadAgentRun();
+  </script>
+</body>
+</html>

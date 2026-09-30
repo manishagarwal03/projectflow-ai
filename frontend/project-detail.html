@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project Detail - ProjectFlow AI</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">ProjectFlow AI</div>
+      <nav>
+        <ul class="sidebar-nav">
+          <li><a href="projects.html">📊 Projects</a></li>
+          <li><a href="agent-runs.html">🤖 Agent Runs</a></li>
+          <li><a href="integrations.html">🔗 Integrations</a></li>
+          <li><a href="#" id="logout-btn">🚪 Logout</a></li>
+        </ul>
+      </nav>
+      <div class="mt-lg">
+        <button id="theme-toggle" class="theme-toggle">🌙 Dark</button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="header">
+        <div>
+          <h1 id="project-name">Loading...</h1>
+          <p class="text-secondary" id="project-description"></p>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-secondary" id="edit-project-btn">Edit Project</button>
+          <button class="btn btn-primary" id="add-task-btn">+ Add Task</button>
+        </div>
+      </div>
+
+      <!-- Project Summary -->
+      <div class="card">
+        <div class="card-header">Project Summary</div>
+        <div class="flex flex-gap">
+          <div>
+            <strong>Status:</strong> <span id="project-status"></span>
+          </div>
+          <div>
+            <strong>Total Tasks:</strong> <span id="total-tasks">0</span>
+          </div>
+          <div>
+            <strong>To Do:</strong> <span id="todo-tasks">0</span>
+          </div>
+          <div>
+            <strong>In Progress:</strong> <span id="in-progress-tasks">0</span>
+          </div>
+          <div>
+            <strong>Done:</strong> <span id="done-tasks">0</span>
+          </div>
+          <div>
+            <strong>Completion:</strong> <span id="completion-percentage">0%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="filters">
+        <div class="filter-group">
+          <label>Status:</label>
+          <select id="status-filter" class="form-select">
+            <option value="">All</option>
+            <option value="todo">To Do</option>
+            <option value="in_progress">In Progress</option>
+            <option value="done">Done</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Priority:</label>
+          <select id="priority-filter" class="form-select">
+            <option value="">All</option>
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+            <option value="critical">Critical</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Tasks Table -->
+      <div id="tasks-container">
+        <div class="spinner"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/theme.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/navigation.js"></script>
+  <script>
+    requireAuth();
+
+    document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+
+    const projectId = getQueryParam('id');
+    if (!projectId) {
+      window.location.href = 'projects.html';
+    }
+
+    let currentProject = null;
+
+    async function loadProject() {
+      try {
+        currentProject = await api.getProject(projectId);
+        
+        document.getElementById('project-name').textContent = currentProject.name;
+        document.getElementById('project-description').textContent = currentProject.description || 'No description';
+        document.getElementById('project-status').innerHTML = `<span class="badge ${getStatusBadgeClass(currentProject.status)}">${formatStatusLabel(currentProject.status)}</span>`;
+        document.getElementById('total-tasks').textContent = currentProject.total_tasks;
+        document.getElementById('todo-tasks').textContent = currentProject.todo_tasks;
+        document.getElementById('in-progress-tasks').textContent = currentProject.in_progress_tasks;
+        document.getElementById('done-tasks').textContent = currentProject.done_tasks;
+        document.getElementById('completion-percentage').textContent = currentProject.completion_percentage + '%';
+      } catch (error) {
+        showError('Failed to load project: ' + error.message);
+      }
+    }
+
+    async function loadTasks() {
+      const container = document.getElementById('tasks-container');
+      const statusFilter = document.getElementById('status-filter').value;
+      const priorityFilter = document.getElementById('priority-filter').value;
+
+      const filters = {};
+      if (statusFilter) filters.status = statusFilter;
+      if (priorityFilter) filters.priority = priorityFilter;
+
+      try {
+        const tasks = await api.getTasks(projectId, filters);
+        
+        if (tasks.length === 0) {
+          container.innerHTML = `
+            <div class="card text-center">
+              <p class="text-secondary">No tasks found. Create your first task!</p>
+            </div>
+          `;
+          return;
+        }
+
+        const tableHTML = `
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Status</th>
+                <th>Priority</th>
+                <th>Due Date</th>
+                <th>Created</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${tasks.map(task => `
+                <tr onclick="window.location.href='task-detail.html?id=${task.id}'">
+                  <td><strong>${escapeHtml(task.title)}</strong></td>
+                  <td><span class="badge ${getStatusBadgeClass(task.status)}">${formatStatusLabel(task.status)}</span></td>
+                  <td><span class="badge ${getPriorityBadgeClass(task.priority)}">${formatStatusLabel(task.priority)}</span></td>
+                  <td>${formatDate(task.due_date)}</td>
+                  <td>${formatDate(task.created_at)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+        
+        container.innerHTML = tableHTML;
+      } catch (error) {
+        container.innerHTML = `
+          <div class="alert alert-error">
+            Failed to load tasks: ${error.message}
+          </div>
+        `;
+      }
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Event listeners
+    document.getElementById('edit-project-btn').addEventListener('click', () => {
+      window.location.href = `project-form.html?id=${projectId}`;
+    });
+
+    document.getElementById('add-task-btn').addEventListener('click', () => {
+      window.location.href = `task-form.html?project_id=${projectId}`;
+    });
+
+    document.getElementById('status-filter').addEventListener('change', loadTasks);
+    document.getElementById('priority-filter').addEventListener('change', loadTasks);
+
+    // Load data
+    loadProject();
+    loadTasks();
+  </script>
+</body>
+</html>

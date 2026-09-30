@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agent Runs - ProjectFlow AI</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <aside class="sidebar">
+      <div class="sidebar-logo">ProjectFlow AI</div>
+      <nav>
+        <ul class="sidebar-nav">
+          <li><a href="projects.html">📊 Projects</a></li>
+          <li><a href="agent-runs.html">🤖 Agent Runs</a></li>
+          <li><a href="integrations.html">🔗 Integrations</a></li>
+          <li><a href="#" id="logout-btn">🚪 Logout</a></li>
+        </ul>
+      </nav>
+      <div class="mt-lg">
+        <button id="theme-toggle" class="theme-toggle">🌙 Dark</button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="header">
+        <div>
+          <h1>🤖 Agent Runs</h1>
+          <p class="text-secondary">View AI agent activity and history</p>
+        </div>
+      </div>
+
+      <div class="filters">
+        <div class="filter-group">
+          <label>Agent Type:</label>
+          <select id="agent-filter" class="form-select">
+            <option value="">All</option>
+            <option value="planning">Planning</option>
+            <option value="research">Research</option>
+            <option value="reviewer">Reviewer</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Status:</label>
+          <select id="status-filter" class="form-select">
+            <option value="">All</option>
+            <option value="running">Running</option>
+            <option value="completed">Completed</option>
+            <option value="failed">Failed</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="agent-runs-container">
+        <div class="spinner"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/theme.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/navigation.js"></script>
+  <script>
+    requireAuth();
+    document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+
+    async function loadAgentRuns() {
+      const container = document.getElementById('agent-runs-container');
+      const agentType = document.getElementById('agent-filter').value;
+      const status = document.getElementById('status-filter').value;
+
+      const filters = {};
+      if (agentType) filters.agent_type = agentType;
+      if (status) filters.status = status;
+
+      try {
+        const agentRuns = await api.getAgentRuns(filters);
+        
+        if (agentRuns.length === 0) {
+          container.innerHTML = `
+            <div class="card text-center">
+              <p class="text-secondary">No agent runs found</p>
+            </div>
+          `;
+          return;
+        }
+
+        const tableHTML = `
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Agent Type</th>
+                <th>Status</th>
+                <th>Duration</th>
+                <th>Output</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${agentRuns.map(run => `
+                <tr>
+                  <td><span class="badge badge-primary">${formatStatusLabel(run.agent_type)}</span></td>
+                  <td><span class="badge ${getStatusBadgeClass(run.status)}">${formatStatusLabel(run.status)}</span></td>
+                  <td>${run.duration_ms ? run.duration_ms + 'ms' : 'N/A'}</td>
+                  <td>${escapeHtml(truncate(run.output || 'N/A', 50))}</td>
+                  <td>${formatDateTime(run.created_at)}</td>
+                  <td>
+                    <button class="btn btn-sm btn-secondary" onclick="window.location.href='agent-run-detail.html?id=${run.id}'">
+                      View Details
+                    </button>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+        
+        container.innerHTML = tableHTML;
+      } catch (error) {
+        container.innerHTML = `
+          <div class="alert alert-error">
+            Failed to load agent runs: ${error.message}
+          </div>
+        `;
+      }
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function truncate(str, length) {
+      return str.length > length ? str.substring(0, length) + '...' : str;
+    }
+
+    document.getElementById('agent-filter').addEventListener('change', loadAgentRuns);
+    document.getElementById('status-filter').addEventListener('change', loadAgentRuns);
+
+    loadAgentRuns();
+  </script>
+</body>
+</html>

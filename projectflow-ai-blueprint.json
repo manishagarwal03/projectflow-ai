@@ -1,0 +1,1470 @@
+{
+  "type": "app-idea-blueprint",
+  "version": 2,
+  "form_title": "App Idea Blueprint — Front End, Back End & Database",
+  "saved_at": "2026-09-28T20:05:18.944Z",
+  "app_name": "ProjectFlow AI",
+  "progress": {
+    "required_answered": 27,
+    "required_total": 27,
+    "complete": true,
+    "issues_to_review": 0
+  },
+  "derived": {
+    "api_endpoints": [
+      {
+        "method": "POST",
+        "path": "/auth/login",
+        "used_by": [
+          "Login / Sign Up › Sign In"
+        ],
+        "sends": [
+          "email, password"
+        ],
+        "returns": [
+          "authenticated user and session/access token"
+        ],
+        "errors": [
+          "401 incorrect email or password; 422 missing/invalid required fields"
+        ]
+      },
+      {
+        "method": "POST",
+        "path": "/auth/register",
+        "used_by": [
+          "Login / Sign Up › Sign Up"
+        ],
+        "sends": [
+          "name, email, password"
+        ],
+        "returns": [
+          "created user and authenticated session/access token"
+        ],
+        "errors": [
+          "409 email already registered; 422 missing/invalid required fields"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/projects",
+        "used_by": [
+          "Projects › Projects Table"
+        ],
+        "sends": [],
+        "returns": [
+          "projects"
+        ],
+        "errors": [
+          "500 Unable to load projects"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/projects/{project_id}",
+        "used_by": [
+          "Projects › Open Project",
+          "Project Detail › Project Summary"
+        ],
+        "sends": [
+          "project_id"
+        ],
+        "returns": [
+          "project,tasks",
+          "project,task_counts"
+        ],
+        "errors": [
+          "404 Project not found",
+          "404"
+        ]
+      },
+      {
+        "method": "POST",
+        "path": "/projects",
+        "used_by": [
+          "Add / Edit Project › Create Project"
+        ],
+        "sends": [
+          "name,description,status"
+        ],
+        "returns": [
+          "project"
+        ],
+        "errors": [
+          "422 Required/invalid fields"
+        ]
+      },
+      {
+        "method": "PUT",
+        "path": "/projects/{project_id}",
+        "used_by": [
+          "Add / Edit Project › Save Changes"
+        ],
+        "sends": [
+          "name,description,status"
+        ],
+        "returns": [
+          "project"
+        ],
+        "errors": [
+          "404/422"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/projects/{project_id}/tasks",
+        "used_by": [
+          "Project Detail › Tasks"
+        ],
+        "sends": [
+          "project_id,filters"
+        ],
+        "returns": [
+          "tasks"
+        ],
+        "errors": [
+          "404"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/tasks/{task_id}",
+        "used_by": [
+          "Project Detail › Open Task",
+          "Task Detail › Task Details"
+        ],
+        "sends": [
+          "task_id"
+        ],
+        "returns": [
+          "task,subtasks,agent_runs",
+          "task,subtasks"
+        ],
+        "errors": [
+          "404"
+        ]
+      },
+      {
+        "method": "POST",
+        "path": "/projects/{project_id}/tasks",
+        "used_by": [
+          "Add / Edit Task › Create Task"
+        ],
+        "sends": [
+          "title,description,priority,status,due_date"
+        ],
+        "returns": [
+          "task"
+        ],
+        "errors": [
+          "404/422"
+        ]
+      },
+      {
+        "method": "PUT",
+        "path": "/tasks/{task_id}",
+        "used_by": [
+          "Add / Edit Task › Save Changes"
+        ],
+        "sends": [
+          "title,description,priority,status,due_date"
+        ],
+        "returns": [
+          "task"
+        ],
+        "errors": [
+          "404/422"
+        ]
+      },
+      {
+        "method": "DELETE",
+        "path": "/tasks/{task_id}",
+        "used_by": [
+          "Task Detail › Delete Task"
+        ],
+        "sends": [
+          "task_id"
+        ],
+        "returns": [
+          "deleted=true"
+        ],
+        "errors": [
+          "404"
+        ]
+      },
+      {
+        "method": "POST",
+        "path": "/tasks/{task_id}/plan",
+        "used_by": [
+          "Task Detail › Plan with AI"
+        ],
+        "sends": [
+          "task_id,task_context"
+        ],
+        "returns": [
+          "agent_run_id,suggested_subtasks"
+        ],
+        "errors": [
+          "404/503"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/agent-runs/{agent_run_id}",
+        "used_by": [
+          "AI Plan Review › Planning Result",
+          "Agent Runs › View Run",
+          "Agent Run Detail › Run Detail"
+        ],
+        "sends": [
+          "agent_run_id"
+        ],
+        "returns": [
+          "status,output,suggestions",
+          "run,tool_calls",
+          "agent_run"
+        ],
+        "errors": [
+          "404/409",
+          "404"
+        ]
+      },
+      {
+        "method": "POST",
+        "path": "/agent-runs/{agent_run_id}/accept",
+        "used_by": [
+          "AI Plan Review › Accept Selected"
+        ],
+        "sends": [
+          "selected_suggestion_ids"
+        ],
+        "returns": [
+          "created_subtasks"
+        ],
+        "errors": [
+          "400/404"
+        ]
+      },
+      {
+        "method": "POST",
+        "path": "/agent-runs/{agent_run_id}/reject",
+        "used_by": [
+          "AI Plan Review › Reject Plan"
+        ],
+        "sends": [
+          "agent_run_id"
+        ],
+        "returns": [
+          "status=rejected"
+        ],
+        "errors": [
+          "404"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/agent-runs",
+        "used_by": [
+          "Agent Runs › Agent Run History"
+        ],
+        "sends": [
+          "filters"
+        ],
+        "returns": [
+          "agent_runs"
+        ],
+        "errors": [
+          "500"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/integrations",
+        "used_by": [
+          "Integrations › Connections"
+        ],
+        "sends": [],
+        "returns": [
+          "integrations"
+        ],
+        "errors": [
+          "500"
+        ]
+      },
+      {
+        "method": "POST",
+        "path": "/integrations/github-mcp/connect",
+        "used_by": [
+          "Integrations › Connect GitHub MCP"
+        ],
+        "sends": [
+          "configuration_reference"
+        ],
+        "returns": [
+          "connection_status"
+        ],
+        "errors": [
+          "400/503"
+        ]
+      },
+      {
+        "method": "POST",
+        "path": "/integrations/{integration_id}/test",
+        "used_by": [
+          "Integrations › Test Connection"
+        ],
+        "sends": [
+          "integration_id"
+        ],
+        "returns": [
+          "status,available_tools"
+        ],
+        "errors": [
+          "404/503"
+        ]
+      },
+      {
+        "method": "DELETE",
+        "path": "/integrations/{integration_id}",
+        "used_by": [
+          "Integrations › Disconnect"
+        ],
+        "sends": [
+          "integration_id"
+        ],
+        "returns": [
+          "disconnected=true"
+        ],
+        "errors": [
+          "404"
+        ]
+      }
+    ],
+    "issues_to_review": []
+  },
+  "answers": {
+    "your_name": {
+      "section": "The Big Idea",
+      "question": "Your name",
+      "answer": "Manish Agarwal"
+    },
+    "app_name": {
+      "section": "The Big Idea",
+      "question": "App name",
+      "answer": "ProjectFlow AI"
+    },
+    "one_sentence_pitch": {
+      "section": "The Big Idea",
+      "question": "One-sentence pitch",
+      "answer": "An AI-powered project and task management workspace that helps teams turn goals into actionable plans, coordinate work, surface project context and review progress."
+    },
+    "the_problem_being_solved": {
+      "section": "The Big Idea",
+      "question": "The problem being solved",
+      "answer": "Teams often manage projects across disconnected tasks, documents, repository issues and conversations. Planning is manual, work gets fragmented, important context is missed, and project owners spend time repeatedly breaking work into tasks, researching dependencies and reviewing progress. ProjectFlow AI centralizes projects and tasks while using specialized AI agents to assist with planning, research and review."
+    },
+    "who_will_use_the_app": {
+      "section": "The Big Idea",
+      "question": "Who will use the app",
+      "answer": [
+        "Project managers and team leads, Engineering and product teams, Individual professionals managing complex projects"
+      ]
+    },
+    "type_of_app": {
+      "section": "The Big Idea",
+      "question": "Type of app",
+      "answer": "AI-powered project and task management application"
+    },
+    "how_you_will_know_it_is_working": {
+      "section": "The Big Idea",
+      "question": "How you will know it is working",
+      "answer": "Project owners can create projects, organize and prioritize tasks, and track completion from one workspace. The Planning Agent can convert a business objective or complex task into useful proposed subtasks. Users can review and approve AI recommendations before they change project data. External project context such as GitHub issues can be accessed through approved integrations. Agent activity remains traceable so teams can understand the source of recommendations and actions."
+    },
+    "front_end_look_and_feel": {
+      "section": "Front End — Look and Feel",
+      "question": "Front end: Look and feel",
+      "answer": "Clean professional project-management workspace with clear project status, task priorities and AI-assisted actions."
+    },
+    "front_end_color_theme": {
+      "section": "Front End — Look and Feel",
+      "question": "Front end: Color theme",
+      "answer": "Slate and steel (primary #334155, accent #94A3B8)"
+    },
+    "front_end_custom_colors": {
+      "section": "Front End — Look and Feel",
+      "question": "Front end: Custom colors",
+      "answer": null
+    },
+    "front_end_light_or_dark_mode": {
+      "section": "Front End — Look and Feel",
+      "question": "Front end: Light or dark mode",
+      "answer": "Both, with a switch to change"
+    },
+    "front_end_font_style": {
+      "section": "Front End — Look and Feel",
+      "question": "Front end: Font style",
+      "answer": "Modern and clean (sans-serif)"
+    },
+    "front_end_shape_of_buttons_and_cards": {
+      "section": "Front End — Look and Feel",
+      "question": "Front end: Shape of buttons and cards",
+      "answer": "Softly rounded (a safe default)"
+    },
+    "front_end_logo_and_inspiration": {
+      "section": "Front End — Look and Feel",
+      "question": "Front end: Logo and inspiration",
+      "answer": null
+    },
+    "front_end_devices": {
+      "section": "Front End — Look and Feel",
+      "question": "Front end: Devices",
+      "answer": [
+        "Phone (mobile-friendly first)",
+        "Laptop or desktop",
+        "Tablet"
+      ]
+    },
+    "front_end_sketch_or_mock_up_link": {
+      "section": "Front End — Look and Feel",
+      "question": "Front end: Sketch or mock-up link",
+      "answer": null
+    },
+    "front_end_login_and_accounts": {
+      "section": "Front End — Screens, Controls and Navigation",
+      "question": "Front end: Login and accounts",
+      "answer": "Yes: email and password"
+    },
+    "front_end_navigation_style": {
+      "section": "Front End — Screens, Controls and Navigation",
+      "question": "Front end: Navigation style",
+      "answer": "Side menu"
+    },
+    "front_end_most_important_user_journey_step_by_step": {
+      "section": "Front End — Screens, Controls and Navigation",
+      "question": "Front end: Most important user journey, step by step",
+      "answer": "Open Projects → create project → add tasks → update status/priority → open a task → ask Planning Agent for subtasks → review and accept selected suggestions → inspect agent runs/tool calls → later connect GitHub through MCP."
+    },
+    "front_end_screens_and_controls": {
+      "section": "Front End — Screens, Controls and Navigation",
+      "question": "Front end: Screens and controls",
+      "answer": [
+        {
+          "name": "Login / Sign Up",
+          "purpose": "Allow a user to create a ProjectFlow AI account or sign in to an existing account.",
+          "who_can_see": "Anyone who is not signed in.",
+          "controls": [
+            {
+              "type": "text_input",
+              "label": "Name",
+              "shows_or_collects": "Collects the user's name when creating a new account.",
+              "action": "display_only"
+            },
+            {
+              "type": "other",
+              "label": "Email",
+              "shows_or_collects": "Collects the user's email address for sign up or sign in.",
+              "action": "display_only"
+            },
+            {
+              "type": "other",
+              "label": "Password",
+              "shows_or_collects": "Collects the user's password. Implement as a secure masked password field.",
+              "action": "display_only"
+            },
+            {
+              "type": "button",
+              "label": "Sign In",
+              "shows_or_collects": "Signs in an existing user.",
+              "action": "call_api",
+              "api_method": "POST",
+              "api_path": "/auth/login",
+              "api_sends": "email, password",
+              "api_returns": "authenticated user and session/access token",
+              "api_errors": "401 incorrect email or password; 422 missing/invalid required fields",
+              "then_go_to_screen": "Projects"
+            },
+            {
+              "type": "button",
+              "label": "Sign Up",
+              "shows_or_collects": "Creates a new ProjectFlow AI account.",
+              "action": "call_api",
+              "api_method": "POST",
+              "api_path": "/auth/register",
+              "api_sends": "name, email, password",
+              "api_returns": "created user and authenticated session/access token",
+              "api_errors": "409 email already registered; 422 missing/invalid required fields",
+              "then_go_to_screen": "Projects"
+            }
+          ]
+        },
+        {
+          "name": "Projects",
+          "purpose": "Show and manage projects.",
+          "who_can_see": "V1 local user.",
+          "controls": [
+            {
+              "type": "table",
+              "label": "Projects Table",
+              "shows_or_collects": "Shows project name, status and task counts",
+              "action": "call_api",
+              "api_method": "GET",
+              "api_path": "/projects",
+              "api_sends": null,
+              "api_returns": "projects",
+              "api_errors": "500 Unable to load projects",
+              "then_go_to_screen": null
+            },
+            {
+              "type": "button",
+              "label": "New Project",
+              "shows_or_collects": "Shows project form",
+              "action": "go_to_screen",
+              "goes_to_screen": "Add / Edit Project"
+            },
+            {
+              "type": "button",
+              "label": "Open Project",
+              "shows_or_collects": "Loads selected project",
+              "action": "call_api",
+              "api_method": "GET",
+              "api_path": "/projects/{project_id}",
+              "api_sends": "project_id",
+              "api_returns": "project,tasks",
+              "api_errors": "404 Project not found",
+              "then_go_to_screen": "Project Detail"
+            }
+          ]
+        },
+        {
+          "name": "Add / Edit Project",
+          "purpose": "Create or edit a project.",
+          "who_can_see": "V1 local user.",
+          "controls": [
+            {
+              "type": "text_input",
+              "label": "Project Name",
+              "shows_or_collects": "Collects project name",
+              "action": "display_only"
+            },
+            {
+              "type": "other",
+              "label": "Description",
+              "shows_or_collects": "Collects description",
+              "action": "display_only"
+            },
+            {
+              "type": "dropdown",
+              "label": "Status",
+              "shows_or_collects": "Collects Active, Paused or Completed",
+              "action": "display_only"
+            },
+            {
+              "type": "button",
+              "label": "Create Project",
+              "shows_or_collects": "Creates project",
+              "action": "call_api",
+              "api_method": "POST",
+              "api_path": "/projects",
+              "api_sends": "name,description,status",
+              "api_returns": "project",
+              "api_errors": "422 Required/invalid fields",
+              "then_go_to_screen": "Project Detail"
+            },
+            {
+              "type": "button",
+              "label": "Save Changes",
+              "shows_or_collects": "Updates project",
+              "action": "call_api",
+              "api_method": "PUT",
+              "api_path": "/projects/{project_id}",
+              "api_sends": "name,description,status",
+              "api_returns": "project",
+              "api_errors": "404/422",
+              "then_go_to_screen": "Project Detail"
+            }
+          ]
+        },
+        {
+          "name": "Project Detail",
+          "purpose": "Manage one project and its tasks.",
+          "who_can_see": "V1 local user.",
+          "controls": [
+            {
+              "type": "other",
+              "label": "Project Summary",
+              "shows_or_collects": "Shows project and task counts",
+              "action": "call_api",
+              "api_method": "GET",
+              "api_path": "/projects/{project_id}",
+              "api_sends": "project_id",
+              "api_returns": "project,task_counts",
+              "api_errors": "404",
+              "then_go_to_screen": null
+            },
+            {
+              "type": "dropdown",
+              "label": "Status Filter",
+              "shows_or_collects": "Collects task status filter",
+              "action": "display_only"
+            },
+            {
+              "type": "dropdown",
+              "label": "Priority Filter",
+              "shows_or_collects": "Collects priority filter",
+              "action": "display_only"
+            },
+            {
+              "type": "table",
+              "label": "Tasks",
+              "shows_or_collects": "Shows title,status,priority,due date",
+              "action": "call_api",
+              "api_method": "GET",
+              "api_path": "/projects/{project_id}/tasks",
+              "api_sends": "project_id,filters",
+              "api_returns": "tasks",
+              "api_errors": "404",
+              "then_go_to_screen": null
+            },
+            {
+              "type": "button",
+              "label": "Add Task",
+              "shows_or_collects": "Shows task form",
+              "action": "go_to_screen",
+              "goes_to_screen": "Add / Edit Task"
+            },
+            {
+              "type": "button",
+              "label": "Open Task",
+              "shows_or_collects": "Loads task",
+              "action": "call_api",
+              "api_method": "GET",
+              "api_path": "/tasks/{task_id}",
+              "api_sends": "task_id",
+              "api_returns": "task,subtasks,agent_runs",
+              "api_errors": "404",
+              "then_go_to_screen": "Task Detail"
+            }
+          ]
+        },
+        {
+          "name": "Add / Edit Task",
+          "purpose": "Create or edit a task.",
+          "who_can_see": "V1 local user.",
+          "controls": [
+            {
+              "type": "text_input",
+              "label": "Title",
+              "shows_or_collects": "Collects title",
+              "action": "display_only"
+            },
+            {
+              "type": "other",
+              "label": "Description",
+              "shows_or_collects": "Collects details",
+              "action": "display_only"
+            },
+            {
+              "type": "dropdown",
+              "label": "Priority",
+              "shows_or_collects": "Collects Low, Medium, High or Critical",
+              "action": "display_only"
+            },
+            {
+              "type": "dropdown",
+              "label": "Status",
+              "shows_or_collects": "Collects To Do, In Progress or Done",
+              "action": "display_only"
+            },
+            {
+              "type": "date_picker",
+              "label": "Due Date",
+              "shows_or_collects": "Collects optional due date",
+              "action": "display_only"
+            },
+            {
+              "type": "button",
+              "label": "Create Task",
+              "shows_or_collects": "Creates task",
+              "action": "call_api",
+              "api_method": "POST",
+              "api_path": "/projects/{project_id}/tasks",
+              "api_sends": "title,description,priority,status,due_date",
+              "api_returns": "task",
+              "api_errors": "404/422",
+              "then_go_to_screen": "Task Detail"
+            },
+            {
+              "type": "button",
+              "label": "Save Changes",
+              "shows_or_collects": "Updates task",
+              "action": "call_api",
+              "api_method": "PUT",
+              "api_path": "/tasks/{task_id}",
+              "api_sends": "title,description,priority,status,due_date",
+              "api_returns": "task",
+              "api_errors": "404/422",
+              "then_go_to_screen": "Task Detail"
+            }
+          ]
+        },
+        {
+          "name": "Task Detail",
+          "purpose": "View a task and invoke AI assistance.",
+          "who_can_see": "V1 local user.",
+          "controls": [
+            {
+              "type": "other",
+              "label": "Task Details",
+              "shows_or_collects": "Shows task details",
+              "action": "call_api",
+              "api_method": "GET",
+              "api_path": "/tasks/{task_id}",
+              "api_sends": "task_id",
+              "api_returns": "task,subtasks",
+              "api_errors": "404",
+              "then_go_to_screen": null
+            },
+            {
+              "type": "button",
+              "label": "Edit Task",
+              "shows_or_collects": "Shows edit form",
+              "action": "go_to_screen",
+              "goes_to_screen": "Add / Edit Task"
+            },
+            {
+              "type": "button",
+              "label": "Delete Task",
+              "shows_or_collects": "Deletes task",
+              "action": "call_api",
+              "api_method": "DELETE",
+              "api_path": "/tasks/{task_id}",
+              "api_sends": "task_id",
+              "api_returns": "deleted=true",
+              "api_errors": "404",
+              "then_go_to_screen": "Project Detail"
+            },
+            {
+              "type": "button",
+              "label": "Plan with AI",
+              "shows_or_collects": "Asks Planning Agent to propose subtasks",
+              "action": "call_api",
+              "api_method": "POST",
+              "api_path": "/tasks/{task_id}/plan",
+              "api_sends": "task_id,task_context",
+              "api_returns": "agent_run_id,suggested_subtasks",
+              "api_errors": "404/503",
+              "then_go_to_screen": "AI Plan Review"
+            },
+            {
+              "type": "table",
+              "label": "Subtasks",
+              "shows_or_collects": "Shows accepted subtasks and status",
+              "action": "display_only"
+            }
+          ]
+        },
+        {
+          "name": "AI Plan Review",
+          "purpose": "Review AI-generated subtasks before saving them.",
+          "who_can_see": "V1 local user.",
+          "controls": [
+            {
+              "type": "other",
+              "label": "Planning Result",
+              "shows_or_collects": "Shows agent output",
+              "action": "call_api",
+              "api_method": "GET",
+              "api_path": "/agent-runs/{agent_run_id}",
+              "api_sends": "agent_run_id",
+              "api_returns": "status,output,suggestions",
+              "api_errors": "404/409",
+              "then_go_to_screen": null
+            },
+            {
+              "type": "other",
+              "label": "Select Subtask",
+              "shows_or_collects": "Collects suggestions to accept",
+              "action": "display_only"
+            },
+            {
+              "type": "button",
+              "label": "Accept Selected",
+              "shows_or_collects": "Creates selected subtasks",
+              "action": "call_api",
+              "api_method": "POST",
+              "api_path": "/agent-runs/{agent_run_id}/accept",
+              "api_sends": "selected_suggestion_ids",
+              "api_returns": "created_subtasks",
+              "api_errors": "400/404",
+              "then_go_to_screen": "Task Detail"
+            },
+            {
+              "type": "button",
+              "label": "Reject Plan",
+              "shows_or_collects": "Rejects suggestions",
+              "action": "call_api",
+              "api_method": "POST",
+              "api_path": "/agent-runs/{agent_run_id}/reject",
+              "api_sends": "agent_run_id",
+              "api_returns": "status=rejected",
+              "api_errors": "404",
+              "then_go_to_screen": "Task Detail"
+            }
+          ]
+        },
+        {
+          "name": "Agent Runs",
+          "purpose": "Show AI agent activity, status and outcomes for project traceability and operational review.",
+          "who_can_see": "V1 local user.",
+          "controls": [
+            {
+              "type": "table",
+              "label": "Agent Run History",
+              "shows_or_collects": "Shows agent,type,status,duration,result",
+              "action": "call_api",
+              "api_method": "GET",
+              "api_path": "/agent-runs",
+              "api_sends": "filters",
+              "api_returns": "agent_runs",
+              "api_errors": "500",
+              "then_go_to_screen": null
+            },
+            {
+              "type": "dropdown",
+              "label": "Agent Filter",
+              "shows_or_collects": "Collects agent type",
+              "action": "display_only"
+            },
+            {
+              "type": "dropdown",
+              "label": "Status Filter",
+              "shows_or_collects": "Collects run status",
+              "action": "display_only"
+            },
+            {
+              "type": "button",
+              "label": "View Run",
+              "shows_or_collects": "Loads run detail",
+              "action": "call_api",
+              "api_method": "GET",
+              "api_path": "/agent-runs/{agent_run_id}",
+              "api_sends": "agent_run_id",
+              "api_returns": "run,tool_calls",
+              "api_errors": "404",
+              "then_go_to_screen": "Agent Run Detail"
+            }
+          ]
+        },
+        {
+          "name": "Agent Run Detail",
+          "purpose": "Inspect a specific AI agent execution, including its business input, output and approved tool usage.",
+          "who_can_see": "V1 local user.",
+          "controls": [
+            {
+              "type": "other",
+              "label": "Run Detail",
+              "shows_or_collects": "Shows input/output/timing/errors",
+              "action": "call_api",
+              "api_method": "GET",
+              "api_path": "/agent-runs/{agent_run_id}",
+              "api_sends": "agent_run_id",
+              "api_returns": "agent_run",
+              "api_errors": "404",
+              "then_go_to_screen": null
+            },
+            {
+              "type": "table",
+              "label": "Tool Calls",
+              "shows_or_collects": "Shows tools and MCP calls",
+              "action": "display_only"
+            },
+            {
+              "type": "other",
+              "label": "Agent Output",
+              "shows_or_collects": "Shows final output",
+              "action": "display_only"
+            }
+          ]
+        },
+        {
+          "name": "Integrations",
+          "purpose": "Manage approved external systems that provide project context to AI agents, starting with GitHub MCP.",
+          "who_can_see": "V1 local user after core app works.",
+          "controls": [
+            {
+              "type": "table",
+              "label": "Connections",
+              "shows_or_collects": "Shows integrations and status",
+              "action": "call_api",
+              "api_method": "GET",
+              "api_path": "/integrations",
+              "api_sends": null,
+              "api_returns": "integrations",
+              "api_errors": "500",
+              "then_go_to_screen": null
+            },
+            {
+              "type": "button",
+              "label": "Connect GitHub MCP",
+              "shows_or_collects": "Configures GitHub MCP",
+              "action": "call_api",
+              "api_method": "POST",
+              "api_path": "/integrations/github-mcp/connect",
+              "api_sends": "configuration_reference",
+              "api_returns": "connection_status",
+              "api_errors": "400/503",
+              "then_go_to_screen": null
+            },
+            {
+              "type": "button",
+              "label": "Test Connection",
+              "shows_or_collects": "Tests MCP tools",
+              "action": "call_api",
+              "api_method": "POST",
+              "api_path": "/integrations/{integration_id}/test",
+              "api_sends": "integration_id",
+              "api_returns": "status,available_tools",
+              "api_errors": "404/503",
+              "then_go_to_screen": null
+            },
+            {
+              "type": "button",
+              "label": "Disconnect",
+              "shows_or_collects": "Removes integration",
+              "action": "call_api",
+              "api_method": "DELETE",
+              "api_path": "/integrations/{integration_id}",
+              "api_sends": "integration_id",
+              "api_returns": "disconnected=true",
+              "api_errors": "404",
+              "then_go_to_screen": null
+            }
+          ]
+        }
+      ]
+    },
+    "front_end_start_screen": {
+      "section": "Front End — Screens, Controls and Navigation",
+      "question": "Front end: Start screen",
+      "answer": "Login / Sign Up"
+    },
+    "front_end_screen_after_login": {
+      "section": "Front End — Screens, Controls and Navigation",
+      "question": "Front end: Screen after login",
+      "answer": "Projects"
+    },
+    "front_end_navigation_map_in_words": {
+      "section": "Front End — Screens, Controls and Navigation",
+      "question": "Front end: Navigation map in words",
+      "answer": "Login / Sign Up → Projects → Project Detail → Task Detail. Project Detail can open Add / Edit Project, Add / Edit Task and Agent Runs. Task Detail can invoke Planning Agent → AI Plan Review → accepted subtasks return to Task Detail. After sign in, side navigation exposes Projects, Agent Runs and Integrations."
+    },
+    "front_end_handy_features": {
+      "section": "Front End — Screens, Controls and Navigation",
+      "question": "Front end: Handy features",
+      "answer": [
+        "Dark mode",
+        "Project and task filters, AI planning, Agent activity history, Integration status"
+      ]
+    },
+    "back_end_extra_endpoints_not_tied_to_a_control": {
+      "section": "Back End — Actions, Rules and API",
+      "question": "Back end: Extra endpoints not tied to a control",
+      "answer": "[object Object],[object Object]"
+    },
+    "back_end_actions_the_app_must_perform": {
+      "section": "Back End — Actions, Rules and API",
+      "question": "Back end: Actions the app must perform",
+      "answer": "Calculate project task counts and completion percentage.,Record every application AI agent run.,Record sanitized local-tool/MCP calls for operational visibility and debugging.,Require human approval before AI suggestions become subtasks.,Validate MCP availability and permissions before tool use."
+    },
+    "back_end_business_rules_and_calculations": {
+      "section": "Back End — Actions, Rules and API",
+      "question": "Back end: Business rules and calculations",
+      "answer": "Never store raw passwords; store only secure password hashes.,Never allow a user to access, modify or delete another user's projects, tasks, subtasks or agent activity.,Never allow an unauthenticated user to access Projects or other authenticated application screens.,Never allow a task without a project.,Never automatically save AI-generated subtasks; require explicit acceptance.,Project completion percentage = Done tasks / total tasks × 100; use 0 when no tasks exist.,Never expose API keys, MCP credentials or tokens in UI, logs or agent outputs.,Never let an agent invoke an MCP capability that is not configured and allowed."
+    },
+    "back_end_error_situations_and_messages": {
+      "section": "Back End — Actions, Rules and API",
+      "question": "Back end: Error situations and messages",
+      "answer": "[object Object],[object Object],[object Object],[object Object]"
+    },
+    "back_end_user_types_and_what_each_can_do": {
+      "section": "Back End — Actions, Rules and API",
+      "question": "Back end: User types and what each can do",
+      "answer": "V1 has one standard User account type. A user can sign up and sign in with email and password, create and manage their own projects and tasks, request AI planning, review AI suggestions, inspect agent activity and configure approved integrations. Users must never access another user's projects, tasks or agent activity. Team accounts, Admin roles and complex RBAC are outside V1."
+    },
+    "back_end_messages_and_notifications": {
+      "section": "Back End — Actions, Rules and API",
+      "question": "Back end: Messages and notifications",
+      "answer": [
+        "Notifications inside the app (later)"
+      ]
+    },
+    "back_end_payments": {
+      "section": "Back End — Actions, Rules and API",
+      "question": "Back end: Payments",
+      "answer": "Maybe later"
+    },
+    "back_end_other_services_to_connect": {
+      "section": "Back End — Actions, Rules and API",
+      "question": "Back end: Other services to connect",
+      "answer": [
+        "GitHub through MCP to access approved repository, issue and pull-request context"
+      ]
+    },
+    "back_end_sensitive_information_handled": {
+      "section": "Back End — Actions, Rules and API",
+      "question": "Back end: Sensitive information handled",
+      "answer": [
+        "Passwords (login accounts)"
+      ]
+    },
+    "back_end_expected_number_of_users": {
+      "section": "Back End — Actions, Rules and API",
+      "question": "Back end: Expected number of users",
+      "answer": "Small group (up to 50)"
+    },
+    "database_tables_and_fields": {
+      "section": "Database — What the App Stores",
+      "question": "Database: Tables and fields",
+      "answer": [
+        {
+          "name": "Users",
+          "purpose": "Stores ProjectFlow AI user accounts.",
+          "fields": [
+            {
+              "name": "name",
+              "type": "text",
+              "required": true,
+              "unique": false,
+              "notes": "User display name"
+            },
+            {
+              "name": "email",
+              "type": "text",
+              "required": true,
+              "unique": false,
+              "notes": "Unique account email"
+            },
+            {
+              "name": "password_hash",
+              "type": "text",
+              "required": true,
+              "unique": false,
+              "notes": "Store only a secure password hash, never the raw password"
+            },
+            {
+              "name": "status",
+              "type": "text",
+              "required": true,
+              "unique": false,
+              "notes": "active / disabled"
+            }
+          ]
+        },
+        {
+          "name": "Projects",
+          "purpose": "Groups related tasks.",
+          "fields": [
+            {
+              "name": "user",
+              "type": "text",
+              "required": true,
+              "unique": false,
+              "notes": "Owner of the project"
+            },
+            {
+              "name": "name",
+              "type": "text",
+              "required": true,
+              "unique": false,
+              "notes": null
+            },
+            {
+              "name": "description",
+              "type": "text",
+              "required": false,
+              "unique": false,
+              "notes": null
+            },
+            {
+              "name": "status",
+              "type": "text",
+              "required": true,
+              "unique": false,
+              "notes": "active / paused / completed"
+            }
+          ]
+        },
+        {
+          "name": "Tasks",
+          "purpose": "Work items within projects.",
+          "fields": [
+            {
+              "name": "project",
+              "type": "text",
+              "required": true,
+              "unique": false,
+              "notes": null
+            },
+            {
+              "name": "title",
+              "type": "text",
+              "required": true,
+              "unique": false,
+              "notes": null
+            },
+            {
+              "name": "description",
+              "type": "text",
+              "required": false,
+              "unique": false,
+              "notes": null
+            },
+            {
+              "name": "priority",
+              "type": "text",
+              "required": true,
+              "unique": false,
+              "notes": "low / medium / high / critical"
+            },
+            {
+              "name": "status",
+              "type": "text",
+              "required": true,
+              "unique": false,
+              "notes": "todo / in_progress / done"
+            },
+            {
+              "name": "due_date",
+              "type": "text",
+              "required": false,
+              "unique": false,
+              "notes": null
+            }
+          ]
+        },
+        {
+          "name": "Subtasks",
+          "purpose": "Manual or accepted AI subtasks.",
+          "fields": [
+            {
+              "name": "task",
+              "type": "text",
+              "required": true,
+              "unique": false,
+              "notes": null
+            },
+            {
+              "name": "title",
+              "type": "text",
+              "required": true,
+              "unique": false,
+              "notes": null
+            },
+            {
+              "name": "status",
+              "type": "text",
+              "required": true,
+              "unique": false,
+              "notes": "todo / in_progress / done"
+            },
+            {
+              "name": "source",
+              "type": "text",
+              "required": true,
+              "unique": false,
+              "notes": "manual / ai"
+            },
+            {
+              "name": "agent_run",
+              "type": "text",
+              "required": false,
+              "unique": false,
+              "notes": null
+            }
+          ]
+        },
+        {
+          "name": "Agent Runs",
+          "purpose": "Application-level AI executions.",
+          "fields": [
+            {
+              "name": "project",
+              "type": "text",
+              "required": false,
+              "unique": false,
+              "notes": null
+            },
+            {
+              "name": "task",
+              "type": "text",
+              "required": false,
+              "unique": false,
+              "notes": null
+            },
+            {
+              "name": "agent_type",
+              "type": "text",
+              "required": true,
+              "unique": false,
+              "notes": "planning / research / reviewer"
+            },
+            {
+              "name": "status",
+              "type": "text",
+              "required": true,
+              "unique": false,
+              "notes": "running / completed / failed / rejected"
+            },
+            {
+              "name": "input",
+              "type": "text",
+              "required": true,
+              "unique": false,
+              "notes": null
+            },
+            {
+              "name": "output",
+              "type": "text",
+              "required": false,
+              "unique": false,
+              "notes": null
+            },
+            {
+              "name": "error",
+              "type": "text",
+              "required": false,
+              "unique": false,
+              "notes": null
+            },
+            {
+              "name": "duration_ms",
+              "type": "text",
+              "required": false,
+              "unique": false,
+              "notes": null
+            }
+          ]
+        },
+        {
+          "name": "Agent Suggestions",
+          "purpose": "Reviewable suggestions from an agent.",
+          "fields": [
+            {
+              "name": "agent_run",
+              "type": "text",
+              "required": true,
+              "unique": false,
+              "notes": null
+            },
+            {
+              "name": "suggestion_type",
+              "type": "text",
+              "required": true,
+              "unique": false,
+              "notes": "subtask / note / recommendation"
+            },
+            {
+              "name": "title",
+              "type": "text",
+              "required": true,
+              "unique": false,
+              "notes": null
+            },
+            {
+              "name": "description",
+              "type": "text",
+              "required": false,
+              "unique": false,
+              "notes": null
+            },
+            {
+              "name": "status",
+              "type": "text",
+              "required": true,
+              "unique": false,
+              "notes": "pending / accepted / rejected"
+            }
+          ]
+        },
+        {
+          "name": "Tool Calls",
+          "purpose": "Sanitized tool and MCP call history.",
+          "fields": [
+            {
+              "name": "agent_run",
+              "type": "text",
+              "required": true,
+              "unique": false,
+              "notes": null
+            },
+            {
+              "name": "tool_type",
+              "type": "text",
+              "required": true,
+              "unique": false,
+              "notes": "local_tool / mcp"
+            },
+            {
+              "name": "tool_name",
+              "type": "text",
+              "required": true,
+              "unique": false,
+              "notes": null
+            },
+            {
+              "name": "request_summary",
+              "type": "text",
+              "required": false,
+              "unique": false,
+              "notes": "Never secrets"
+            },
+            {
+              "name": "response_summary",
+              "type": "text",
+              "required": false,
+              "unique": false,
+              "notes": null
+            },
+            {
+              "name": "status",
+              "type": "text",
+              "required": true,
+              "unique": false,
+              "notes": "success / failed"
+            }
+          ]
+        },
+        {
+          "name": "Integrations",
+          "purpose": "External integration metadata such as GitHub MCP.",
+          "fields": [
+            {
+              "name": "name",
+              "type": "text",
+              "required": true,
+              "unique": false,
+              "notes": null
+            },
+            {
+              "name": "provider",
+              "type": "text",
+              "required": true,
+              "unique": false,
+              "notes": "github / future"
+            },
+            {
+              "name": "integration_type",
+              "type": "text",
+              "required": true,
+              "unique": false,
+              "notes": "mcp"
+            },
+            {
+              "name": "status",
+              "type": "text",
+              "required": true,
+              "unique": false,
+              "notes": "connected / disconnected / error"
+            },
+            {
+              "name": "configuration_reference",
+              "type": "text",
+              "required": false,
+              "unique": false,
+              "notes": "Reference only; never raw secret"
+            },
+            {
+              "name": "allowed_tools",
+              "type": "text",
+              "required": false,
+              "unique": false,
+              "notes": null
+            }
+          ]
+        }
+      ]
+    },
+    "database_how_the_tables_connect_in_words": {
+      "section": "Database — What the App Stores",
+      "question": "Database: How the tables connect, in words",
+      "answer": "One User can have many Projects, and each Project belongs to exactly one User. One Project can have many Tasks, and each Task belongs to exactly one Project. One Task can have many Subtasks, and each Subtask belongs to exactly one Task. A Project and a Task can have many Agent Runs. Each Agent Run records one execution of a Planning, Research or Reviewer agent. One Agent Run can produce many Agent Suggestions. Each suggestion belongs to exactly one Agent Run and can be accepted or rejected by the user. An accepted AI subtask can link back to the Agent Run that proposed it. One Agent Run can make many Tool Calls. Each Tool Call records one local tool or MCP invocation made during that run. Integrations describe external MCP connections available to agents. Credentials themselves are not stored as normal application data."
+    },
+    "database_three_sample_records": {
+      "section": "Database — What the App Stores",
+      "question": "Database: Three sample records",
+      "answer": "Customer Portal Modernization, Active, Modernize the customer portal and coordinate frontend, backend and migration work. | Mobile App Launch, Active, Coordinate release readiness, testing, documentation and launch activities. | API Reliability Improvement, Paused, Track reliability improvements, production risks and engineering follow-ups."
+    },
+    "database_how_long_to_keep_information": {
+      "section": "Database — What the App Stores",
+      "question": "Database: How long to keep information",
+      "answer": "Keep projects, tasks, subtasks and agent-run history until deleted. Keep sanitized tool-call history for operational visibility/debugging. Never persist raw secrets."
+    },
+    "database_files_and_photos": {
+      "section": "Database — What the App Stores",
+      "question": "Database: Files and photos",
+      "answer": [
+        "Documents (PDF, Word)"
+      ]
+    },
+    "database_reports_and_downloads": {
+      "section": "Database — What the App Stores",
+      "question": "Database: Reports and downloads",
+      "answer": [
+        "On-screen dashboard with totals and charts",
+        "Download to Excel or CSV",
+        "Weekly summary by email"
+      ]
+    },
+    "scope_must_have_features_for_version_1_maximum_3": {
+      "section": "Scope and Build Preferences",
+      "question": "Scope: Must-have features for version 1 (maximum 3)",
+      "answer": "Project and Task Management: create, edit, prioritize, filter and track projects and tasks through completion.,AI-assisted Planning: convert a complex task or project objective into proposed subtasks and allow the user to review and approve them.,Project Context and Traceability: show AI planning history and support an approved GitHub MCP integration for relevant repository and issue context."
+    },
+    "scope_nice_to_have_features_for_later": {
+      "section": "Scope and Build Preferences",
+      "question": "Scope: Nice-to-have features for later",
+      "answer": "Research Agent that gathers relevant project context and attaches concise findings to a task.\nReviewer Agent that evaluates work against project requirements or completion criteria.\nTeam workspaces, authentication and role-based permissions.\nAdditional MCP integrations for business systems such as documentation, communication and issue-management platforms.\nRAG over project documents, specifications and historical decisions.\nBackground processing for long-running research and analysis.\nNotifications, reminders and scheduled project summaries.\nAgent quality evaluation, operational metrics, latency and cost monitoring.\nAdvanced project dashboards, dependencies, milestones and portfolio reporting.\nWorkflow automation with explicit approval gates for sensitive actions."
+    },
+    "scope_what_the_app_should_not_do": {
+      "section": "Scope and Build Preferences",
+      "question": "Scope: What the app should NOT do",
+      "answer": "Do not become a full enterprise portfolio-management suite in V1. Do not automatically accept AI recommendations or allow agents to make destructive project changes without user approval. Do not introduce complex resource planning, billing, time tracking, advanced workflow automation or broad third-party integrations until the core project, task and AI-assisted planning workflows are reliable."
+    },
+    "build_technology_preference": {
+      "section": "Scope and Build Preferences",
+      "question": "Build: Technology preference",
+      "answer": "Python (FastAPI) back end + React front end"
+    },
+    "build_database_preference": {
+      "section": "Scope and Build Preferences",
+      "question": "Build: Database preference",
+      "answer": "PostgreSQL as the primary database. SQLite can be used only for the first local CRUD exercise, then deliberately migrate to PostgreSQL as a later implementation phase."
+    },
+    "build_where_the_app_should_run": {
+      "section": "Scope and Build Preferences",
+      "question": "Build: Where the app should run",
+      "answer": "On my laptop for now. We'll put it online in Week 2 (recommended)"
+    },
+    "build_similar_apps_for_inspiration": {
+      "section": "Scope and Build Preferences",
+      "question": "Build: Similar apps for inspiration",
+      "answer": "A focused project-management experience inspired by the clarity of modern task boards and issue trackers, with AI assistance embedded into planning, research and review workflows."
+    },
+    "build_anything_else_the_ai_should_know": {
+      "section": "Scope and Build Preferences",
+      "question": "Build: Anything else the AI should know",
+      "answer": "Build ProjectFlow AI as a modular business application with clear separation between project-management services, AI-agent orchestration and external integrations.\n\nThe core business workflow is Project → Tasks → AI-assisted Planning → Human Review → Approved Subtasks → Progress Tracking.\n\nUse specialized application agents for bounded business responsibilities. The Planning Agent decomposes complex work into proposed subtasks. A future Research Agent can gather relevant context for a task. A future Reviewer Agent can evaluate project work against goals, requirements or completion criteria.\n\nUse MCP for controlled access to external business systems, beginning with GitHub repository, issue and pull-request context. Only explicitly configured tools and capabilities may be available to agents.\n\nAI recommendations must remain human-controlled. Proposed subtasks or recommendations must not modify project data until the user approves them. Record agent runs and sanitized tool activity for traceability and operational troubleshooting.\n\nUse PostgreSQL as the system of record. Keep APIs and agent orchestration modular so additional integrations, background processing, retrieval and team functionality can be introduced without redesigning the core project and task model.\n\nNever expose API keys, MCP credentials, secrets or raw tokens in the UI, logs or agent outputs."
+    },
+    "final_check_answers_are_specific": {
+      "section": "Final Check",
+      "question": "Final check: Answers are specific",
+      "answer": [
+        "I replaced the examples with my own real names, numbers and details, and a stranger could build my app from these answers."
+      ]
+    },
+    "final_check_how_clear_does_the_idea_feel_right_now": {
+      "section": "Final Check",
+      "question": "Final check: How clear does the idea feel right now?",
+      "answer": 5
+    }
+  }
+}

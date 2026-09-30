@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Integrations - ProjectFlow AI</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <aside class="sidebar">
+      <div class="sidebar-logo">ProjectFlow AI</div>
+      <nav>
+        <ul class="sidebar-nav">
+          <li><a href="projects.html">📊 Projects</a></li>
+          <li><a href="agent-runs.html">🤖 Agent Runs</a></li>
+          <li><a href="integrations.html">🔗 Integrations</a></li>
+          <li><a href="#" id="logout-btn">🚪 Logout</a></li>
+        </ul>
+      </nav>
+      <div class="mt-lg">
+        <button id="theme-toggle" class="theme-toggle">🌙 Dark</button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="header">
+        <div>
+          <h1>🔗 Integrations</h1>
+          <p class="text-secondary">Manage external system connections (MCP)</p>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-primary" id="connect-github-btn">+ Connect GitHub MCP</button>
+        </div>
+      </div>
+
+      <div id="integrations-container">
+        <div class="spinner"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/theme.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/navigation.js"></script>
+  <script>
+    requireAuth();
+    document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+
+    async function loadIntegrations() {
+      const container = document.getElementById('integrations-container');
+      
+      try {
+        const integrations = await api.getIntegrations();
+        
+        if (integrations.length === 0) {
+          container.innerHTML = `
+            <div class="card text-center">
+              <p class="text-secondary">No integrations configured yet</p>
+              <button class="btn btn-primary mt-md" onclick="connectGitHubMCP()">
+                + Connect GitHub MCP
+              </button>
+            </div>
+          `;
+          return;
+        }
+
+        const tableHTML = `
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Provider</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${integrations.map(integration => `
+                <tr>
+                  <td><strong>${escapeHtml(integration.name)}</strong></td>
+                  <td><span class="badge badge-secondary">${formatStatusLabel(integration.provider)}</span></td>
+                  <td><span class="badge badge-info">${formatStatusLabel(integration.integration_type)}</span></td>
+                  <td><span class="badge ${getStatusBadgeClass(integration.status)}">${formatStatusLabel(integration.status)}</span></td>
+                  <td>${formatDate(integration.created_at)}</td>
+                  <td>
+                    <button class="btn btn-sm btn-secondary" onclick="testIntegration('${integration.id}')">Test</button>
+                    <button class="btn btn-sm btn-danger" onclick="disconnectIntegration('${integration.id}')">Disconnect</button>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+        
+        container.innerHTML = tableHTML;
+      } catch (error) {
+        container.innerHTML = `
+          <div class="alert alert-error">
+            Failed to load integrations: ${error.message}
+          </div>
+        `;
+      }
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    async function connectGitHubMCP() {
+      const configRef = prompt('Enter GitHub MCP configuration reference (for V1, any string):');
+      
+      if (!configRef) {
+        return;
+      }
+
+      try {
+        await api.connectGitHubMCP(configRef);
+        showSuccess('GitHub MCP connected successfully!');
+        loadIntegrations();
+      } catch (error) {
+        showError('Failed to connect GitHub MCP: ' + error.message);
+      }
+    }
+
+    async function testIntegration(integrationId) {
+      try {
+        showInfo('Testing integration...');
+        const result = await api.testIntegration(integrationId);
+        showSuccess(`Test successful! Available tools: ${result.available_tools.join(', ')}`);
+      } catch (error) {
+        showError('Test failed: ' + error.message);
+      }
+    }
+
+    async function disconnectIntegration(integrationId) {
+      if (!confirm('Are you sure you want to disconnect this integration?')) {
+        return;
+      }
+
+      try {
+        await api.disconnectIntegration(integrationId);
+        showSuccess('Integration disconnected');
+        loadIntegrations();
+      } catch (error) {
+        showError('Failed to disconnect: ' + error.message);
+      }
+    }
+
+    document.getElementById('connect-github-btn').addEventListener('click', connectGitHubMCP);
+
+    loadIntegrations();
+  </script>
+</body>
+</html>

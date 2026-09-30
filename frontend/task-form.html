@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task Form - ProjectFlow AI</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <aside class="sidebar">
+      <div class="sidebar-logo">ProjectFlow AI</div>
+      <nav>
+        <ul class="sidebar-nav">
+          <li><a href="projects.html">📊 Projects</a></li>
+          <li><a href="agent-runs.html">🤖 Agent Runs</a></li>
+          <li><a href="integrations.html">🔗 Integrations</a></li>
+          <li><a href="#" id="logout-btn">🚪 Logout</a></li>
+        </ul>
+      </nav>
+      <div class="mt-lg">
+        <button id="theme-toggle" class="theme-toggle">🌙 Dark</button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="header">
+        <h1 id="form-title">Create Task</h1>
+      </div>
+
+      <div class="card">
+        <form id="task-form">
+          <div class="form-group">
+            <label class="form-label" for="task-title">Title *</label>
+            <input type="text" id="task-title" class="form-input" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="task-description">Description</label>
+            <textarea id="task-description" class="form-textarea"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="task-priority">Priority *</label>
+            <select id="task-priority" class="form-select" required>
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+              <option value="critical">Critical</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="task-status">Status *</label>
+            <select id="task-status" class="form-select" required>
+              <option value="todo" selected>To Do</option>
+              <option value="in_progress">In Progress</option>
+              <option value="done">Done</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="task-due-date">Due Date</label>
+            <input type="date" id="task-due-date" class="form-input">
+          </div>
+
+          <div class="flex flex-gap">
+            <button type="submit" class="btn btn-primary" id="submit-btn">Create Task</button>
+            <button type="button" class="btn btn-secondary" id="cancel-btn">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/theme.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/navigation.js"></script>
+  <script>
+    requireAuth();
+    document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+
+    const projectId = getQueryParam('project_id');
+    const taskId = getQueryParam('id');
+    const isEdit = !!taskId;
+
+    if (!projectId && !taskId) {
+      window.location.href = 'projects.html';
+    }
+
+    if (isEdit) {
+      document.getElementById('form-title').textContent = 'Edit Task';
+      document.getElementById('submit-btn').textContent = 'Save Changes';
+      loadTask();
+    }
+
+    async function loadTask() {
+      try {
+        const task = await api.getTask(taskId);
+        document.getElementById('task-title').value = task.title;
+        document.getElementById('task-description').value = task.description || '';
+        document.getElementById('task-priority').value = task.priority;
+        document.getElementById('task-status').value = task.status;
+        document.getElementById('task-due-date').value = task.due_date || '';
+      } catch (error) {
+        showError('Failed to load task: ' + error.message);
+      }
+    }
+
+    document.getElementById('cancel-btn').addEventListener('click', () => {
+      if (isEdit) {
+        window.location.href = `task-detail.html?id=${taskId}`;
+      } else {
+        window.location.href = `project-detail.html?id=${projectId}`;
+      }
+    });
+
+    document.getElementById('task-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const data = {
+        title: document.getElementById('task-title').value,
+        description: document.getElementById('task-description').value || null,
+        priority: document.getElementById('task-priority').value,
+        status: document.getElementById('task-status').value,
+        due_date: document.getElementById('task-due-date').value || null
+      };
+
+      try {
+        if (isEdit) {
+          await api.updateTask(taskId, data);
+          showSuccess('Task updated successfully!');
+          setTimeout(() => {
+            window.location.href = `task-detail.html?id=${taskId}`;
+          }, 1000);
+        } else {
+          const newTask = await api.createTask(projectId, data);
+          showSuccess('Task created successfully!');
+          setTimeout(() => {
+            window.location.href = `task-detail.html?id=${newTask.id}`;
+          }, 1000);
+        }
+      } catch (error) {
+        showError(error.message || 'Failed to save task');
+      }
+    });
+  </script>
+</body>
+</html>

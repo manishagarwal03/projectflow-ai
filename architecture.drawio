@@ -1,0 +1,80 @@
+<mxfile host="app.diagrams.net" modified="2026-09-29T00:00:00.000Z" agent="OpenCode" version="21.0.0">
+  <diagram name="ProjectFlow AI Architecture" id="architecture">
+    <mxGraphModel dx="800" dy="600" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- Browser / Frontend -->
+        <mxCell id="frontend" value="&lt;b style=&quot;font-size: 14px;&quot;&gt;Browser / Frontend&lt;/b&gt;&lt;br&gt;&lt;br&gt;HTML + CSS + JavaScript&lt;br&gt;&lt;br&gt;• Login / Register UI&lt;br&gt;• Projects Dashboard&lt;br&gt;• Task Management&lt;br&gt;• AI Plan Review&lt;br&gt;• Agent Runs History&lt;br&gt;• Integrations Config&lt;br&gt;&lt;br&gt;localStorage: JWT token" 
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f2f9f6;strokeColor=#33c375;strokeWidth=2;align=left;verticalAlign=top;spacingLeft=15;spacingTop=10;fontColor=#002726;" 
+          vertex="1" parent="1">
+          <mxGeometry x="80" y="80" width="280" height="240" as="geometry" />
+        </mxCell>
+        
+        <!-- FastAPI Backend -->
+        <mxCell id="backend" value="&lt;b style=&quot;font-size: 14px;&quot;&gt;FastAPI Backend&lt;/b&gt;&lt;br&gt;&lt;br&gt;Python + FastAPI + SQLAlchemy&lt;br&gt;&lt;br&gt;&lt;b&gt;Routers:&lt;/b&gt;&lt;br&gt;• /auth (register, login)&lt;br&gt;• /projects (CRUD)&lt;br&gt;• /tasks (CRUD, planning)&lt;br&gt;• /agent_runs (list, accept)&lt;br&gt;• /integrations (GitHub MCP)&lt;br&gt;&lt;br&gt;&lt;b&gt;Services:&lt;/b&gt;&lt;br&gt;• auth_service (JWT, bcrypt)&lt;br&gt;• planning_agent (AI)&lt;br&gt;&lt;br&gt;&lt;b&gt;Middleware:&lt;/b&gt;&lt;br&gt;• CORS&lt;br&gt;• Authentication" 
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f2f9f6;strokeColor=#33c375;strokeWidth=2;align=left;verticalAlign=top;spacingLeft=15;spacingTop=10;fontColor=#002726;" 
+          vertex="1" parent="1">
+          <mxGeometry x="480" y="80" width="320" height="360" as="geometry" />
+        </mxCell>
+        
+        <!-- PostgreSQL Database -->
+        <mxCell id="database" value="&lt;b style=&quot;font-size: 14px;&quot;&gt;PostgreSQL Database&lt;/b&gt;&lt;br&gt;&lt;br&gt;Relational Database&lt;br&gt;&lt;br&gt;&lt;b&gt;Tables:&lt;/b&gt;&lt;br&gt;• users&lt;br&gt;• projects&lt;br&gt;• tasks&lt;br&gt;• subtasks&lt;br&gt;• agent_runs&lt;br&gt;• agent_suggestions&lt;br&gt;• tool_calls&lt;br&gt;• integrations&lt;br&gt;&lt;br&gt;Managed via Alembic migrations" 
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f2f9f6;strokeColor=#33c375;strokeWidth=2;align=left;verticalAlign=top;spacingLeft=15;spacingTop=10;fontColor=#002726;" 
+          vertex="1" parent="1">
+          <mxGeometry x="480" y="520" width="320" height="260" as="geometry" />
+        </mxCell>
+        
+        <!-- Arrow 1: User Request -->
+        <mxCell id="arrow1" value="HTTP Requests (fetch)&lt;br&gt;GET /projects&lt;br&gt;POST /auth/login&lt;br&gt;POST /tasks/{id}/plan&lt;br&gt;Authorization: Bearer JWT" 
+          style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#33c375;strokeWidth=2;fontColor=#002726;labelBackgroundColor=#ffffff;startArrow=none;startFill=0;endArrow=classic;endFill=1;" 
+          edge="1" parent="1" source="frontend" target="backend">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="430" y="180" />
+              <mxPoint x="430" y="180" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Arrow 2: JSON Response -->
+        <mxCell id="arrow2" value="JSON Response&lt;br&gt;{projects: [...], user: {...}}&lt;br&gt;{access_token: ...}" 
+          style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#33c375;strokeWidth=2;fontColor=#002726;labelBackgroundColor=#ffffff;startArrow=none;startFill=0;endArrow=classic;endFill=1;" 
+          edge="1" parent="1" source="backend" target="frontend">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="430" y="240" />
+              <mxPoint x="430" y="240" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Arrow 3: SQL Query -->
+        <mxCell id="arrow3" value="SQL Queries (SQLAlchemy)&lt;br&gt;SELECT * FROM projects&lt;br&gt;WHERE user_id = ?&lt;br&gt;INSERT INTO tasks ...&lt;br&gt;UPDATE agent_runs ..." 
+          style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#33c375;strokeWidth=2;fontColor=#002726;labelBackgroundColor=#ffffff;startArrow=none;startFill=0;endArrow=classic;endFill=1;" 
+          edge="1" parent="1" source="backend" target="database">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="580" y="470" />
+              <mxPoint x="580" y="470" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Arrow 4: Query Results -->
+        <mxCell id="arrow4" value="Query Results&lt;br&gt;Rows (as ORM objects)" 
+          style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#33c375;strokeWidth=2;fontColor=#002726;labelBackgroundColor=#ffffff;startArrow=none;startFill=0;endArrow=classic;endFill=1;" 
+          edge="1" parent="1" source="database" target="backend">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="700" y="470" />
+              <mxPoint x="700" y="470" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

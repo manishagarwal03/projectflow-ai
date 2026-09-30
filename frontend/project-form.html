@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project Form - ProjectFlow AI</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">ProjectFlow AI</div>
+      <nav>
+        <ul class="sidebar-nav">
+          <li><a href="projects.html">📊 Projects</a></li>
+          <li><a href="agent-runs.html">🤖 Agent Runs</a></li>
+          <li><a href="integrations.html">🔗 Integrations</a></li>
+          <li><a href="#" id="logout-btn">🚪 Logout</a></li>
+        </ul>
+      </nav>
+      <div class="mt-lg">
+        <button id="theme-toggle" class="theme-toggle">🌙 Dark</button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="header">
+        <div>
+          <h1 id="form-title">Create Project</h1>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-secondary" onclick="window.location.href='projects.html'">
+            Cancel
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <form id="project-form">
+          <div class="form-group">
+            <label class="form-label" for="project-name">Project Name *</label>
+            <input type="text" id="project-name" class="form-input" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="project-description">Description</label>
+            <textarea id="project-description" class="form-textarea"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="project-status">Status *</label>
+            <select id="project-status" class="form-select" required>
+              <option value="active">Active</option>
+              <option value="paused">Paused</option>
+              <option value="completed">Completed</option>
+            </select>
+          </div>
+
+          <div class="flex flex-gap">
+            <button type="submit" class="btn btn-primary" id="submit-btn">Create Project</button>
+            <button type="button" class="btn btn-secondary" onclick="window.location.href='projects.html'">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/theme.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/navigation.js"></script>
+  <script>
+    requireAuth();
+
+    document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+
+    const projectId = getQueryParam('id');
+    const isEdit = !!projectId;
+
+    if (isEdit) {
+      document.getElementById('form-title').textContent = 'Edit Project';
+      document.getElementById('submit-btn').textContent = 'Save Changes';
+      loadProject();
+    }
+
+    async function loadProject() {
+      try {
+        const project = await api.getProject(projectId);
+        document.getElementById('project-name').value = project.name;
+        document.getElementById('project-description').value = project.description || '';
+        document.getElementById('project-status').value = project.status;
+      } catch (error) {
+        showError('Failed to load project: ' + error.message);
+      }
+    }
+
+    document.getElementById('project-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const data = {
+        name: document.getElementById('project-name').value,
+        description: document.getElementById('project-description').value || null,
+        status: document.getElementById('project-status').value
+      };
+
+      try {
+        if (isEdit) {
+          await api.updateProject(projectId, data);
+          showSuccess('Project updated successfully!');
+          setTimeout(() => {
+            window.location.href = `project-detail.html?id=${projectId}`;
+          }, 1000);
+        } else {
+          const newProject = await api.createProject(data);
+          showSuccess('Project created successfully!');
+          setTimeout(() => {
+            window.location.href = `project-detail.html?id=${newProject.id}`;
+          }, 1000);
+        }
+      } catch (error) {
+        showError(error.message || 'Failed to save project');
+      }
+    });
+  </script>
+</body>
+</html>

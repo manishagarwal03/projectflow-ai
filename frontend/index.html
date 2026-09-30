@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - ProjectFlow AI</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="auth-container">
+    <div class="auth-card">
+      <h1>ProjectFlow AI</h1>
+      
+      <div id="alert-container"></div>
+      
+      <!-- Sign In Form -->
+      <div id="sign-in-form">
+        <form id="login-form">
+          <div class="form-group">
+            <label class="form-label" for="login-email">Email</label>
+            <input type="email" id="login-email" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="login-password">Password</label>
+            <input type="password" id="login-password" class="form-input" required>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%;">Sign In</button>
+        </form>
+        <div class="auth-toggle">
+          Don't have an account? <a href="#" id="show-signup">Sign Up</a>
+        </div>
+      </div>
+      
+      <!-- Sign Up Form -->
+      <div id="sign-up-form" class="hidden">
+        <form id="register-form">
+          <div class="form-group">
+            <label class="form-label" for="register-name">Name</label>
+            <input type="text" id="register-name" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="register-email">Email</label>
+            <input type="email" id="register-email" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="register-password">Password</label>
+            <input type="password" id="register-password" class="form-input" minlength="6" required>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%;">Sign Up</button>
+        </form>
+        <div class="auth-toggle">
+          Already have an account? <a href="#" id="show-signin">Sign In</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/theme.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/utils.js"></script>
+  <script>
+    // Check if already logged in
+    if (isAuthenticated()) {
+      window.location.href = 'projects.html';
+    }
+
+    // Toggle between sign in and sign up
+    document.getElementById('show-signup').addEventListener('click', (e) => {
+      e.preventDefault();
+      document.getElementById('sign-in-form').classList.add('hidden');
+      document.getElementById('sign-up-form').classList.remove('hidden');
+    });
+
+    document.getElementById('show-signin').addEventListener('click', (e) => {
+      e.preventDefault();
+      document.getElementById('sign-up-form').classList.add('hidden');
+      document.getElementById('sign-in-form').classList.remove('hidden');
+    });
+
+    // Handle login
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+
+      try {
+        const response = await api.login(email, password);
+        saveAuthToken(response.access_token, response.user);
+        window.location.href = 'projects.html';
+      } catch (error) {
+        showError(error.message || 'Login failed. Please check your credentials.');
+      }
+    });
+
+    // Handle registration
+    document.getElementById('register-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('register-name').value;
+      const email = document.getElementById('register-email').value;
+      const password = document.getElementById('register-password').value;
+
+      try {
+        const response = await api.register(name, email, password);
+        saveAuthToken(response.access_token, response.user);
+        window.location.href = 'projects.html';
+      } catch (error) {
+        showError(error.message || 'Registration failed. Please try again.');
+      }
+    });
+  </script>
+</body>
+</html>

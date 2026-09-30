@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Projects - ProjectFlow AI</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">ProjectFlow AI</div>
+      <nav>
+        <ul class="sidebar-nav">
+          <li><a href="projects.html">📊 Projects</a></li>
+          <li><a href="agent-runs.html">🤖 Agent Runs</a></li>
+          <li><a href="integrations.html">🔗 Integrations</a></li>
+          <li><a href="#" id="logout-btn">🚪 Logout</a></li>
+        </ul>
+      </nav>
+      <div class="mt-lg">
+        <button id="theme-toggle" class="theme-toggle">🌙 Dark</button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="header">
+        <div>
+          <h1>Projects</h1>
+          <p class="text-secondary">Manage your projects and tasks</p>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-primary" onclick="window.location.href='project-form.html'">
+            + New Project
+          </button>
+        </div>
+      </div>
+
+      <div id="projects-container">
+        <div class="spinner"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/theme.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/navigation.js"></script>
+  <script>
+    requireAuth();
+
+    document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+
+    async function loadProjects() {
+      const container = document.getElementById('projects-container');
+      
+      try {
+        const projects = await api.getProjects();
+        
+        if (projects.length === 0) {
+          container.innerHTML = `
+            <div class="card text-center">
+              <p class="text-secondary">No projects yet. Create your first project to get started!</p>
+              <button class="btn btn-primary mt-md" onclick="window.location.href='project-form.html'">
+                + Create Project
+              </button>
+            </div>
+          `;
+          return;
+        }
+
+        const tableHTML = `
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Project Name</th>
+                <th>Status</th>
+                <th>Total Tasks</th>
+                <th>To Do</th>
+                <th>In Progress</th>
+                <th>Done</th>
+                <th>Completion</th>
+                <th>Created</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${projects.map(project => `
+                <tr onclick="window.location.href='project-detail.html?id=${project.id}'">
+                  <td><strong>${escapeHtml(project.name)}</strong></td>
+                  <td><span class="badge ${getStatusBadgeClass(project.status)}">${formatStatusLabel(project.status)}</span></td>
+                  <td>${project.total_tasks}</td>
+                  <td>${project.todo_tasks}</td>
+                  <td>${project.in_progress_tasks}</td>
+                  <td>${project.done_tasks}</td>
+                  <td>${project.completion_percentage}%</td>
+                  <td>${formatDate(project.created_at)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+        
+        container.innerHTML = tableHTML;
+      } catch (error) {
+        container.innerHTML = `
+          <div class="alert alert-error">
+            Failed to load projects: ${error.message}
+          </div>
+        `;
+      }
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    loadProjects();
+  </script>
+</body>
+</html>

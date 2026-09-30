@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agent Run Detail - ProjectFlow AI</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <aside class="sidebar">
+      <div class="sidebar-logo">ProjectFlow AI</div>
+      <nav>
+        <ul class="sidebar-nav">
+          <li><a href="projects.html">📊 Projects</a></li>
+          <li><a href="agent-runs.html">🤖 Agent Runs</a></li>
+          <li><a href="integrations.html">🔗 Integrations</a></li>
+          <li><a href="#" id="logout-btn">🚪 Logout</a></li>
+        </ul>
+      </nav>
+      <div class="mt-lg">
+        <button id="theme-toggle" class="theme-toggle">🌙 Dark</button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="header">
+        <div>
+          <h1>Agent Run Detail</h1>
+          <p class="text-secondary"><a href="agent-runs.html">Back to Agent Runs</a></p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">Run Information</div>
+        <div id="run-info">
+          <div class="spinner"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">Input</div>
+        <div id="run-input" class="text-secondary">
+          Loading...
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">Output</div>
+        <div id="run-output" class="text-secondary">
+          Loading...
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">Tool Calls</div>
+        <div id="tool-calls-container">
+          <div class="spinner"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">Suggestions</div>
+        <div id="suggestions-container">
+          <div class="spinner"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/theme.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/navigation.js"></script>
+  <script>
+    requireAuth();
+    document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+
+    const agentRunId = getQueryParam('id');
+    if (!agentRunId) {
+      window.location.href = 'agent-runs.html';
+    }
+
+    async function loadAgentRun() {
+      try {
+        const agentRun = await api.getAgentRun(agentRunId);
+        
+        // Display run info
+        const infoHTML = `
+          <div class="flex flex-gap" style="flex-wrap: wrap;">
+            <div>
+              <strong>Agent Type:</strong> <span class="badge badge-primary">${formatStatusLabel(agentRun.agent_type)}</span>
+            </div>
+            <div>
+              <strong>Status:</strong> <span class="badge ${getStatusBadgeClass(agentRun.status)}">${formatStatusLabel(agentRun.status)}</span>
+            </div>
+            <div>
+              <strong>Duration:</strong> ${agentRun.duration_ms ? agentRun.duration_ms + 'ms' : 'N/A'}
+            </div>
+            <div>
+              <strong>Created:</strong> ${formatDateTime(agentRun.created_at)}
+            </div>
+          </div>
+          ${agentRun.error ? `
+          <div class="alert alert-error mt-md">
+            <strong>Error:</strong> ${escapeHtml(agentRun.error)}
+          </div>
+          ` : ''}
+        `;
+        document.getElementById('run-info').innerHTML = infoHTML;
+
+        // Display input
+        document.getElementById('run-input').innerHTML = `<pre style="white-space: pre-wrap;">${escapeHtml(agentRun.input)}</pre>`;
+
+        // Display output
+        document.getElementById('run-output').innerHTML = `<pre style="white-space: pre-wrap;">${escapeHtml(agentRun.output || 'No output')}</pre>`;
+
+        // Display tool calls
+        displayToolCalls(agentRun.tool_calls);
+
+        // Display suggestions
+        displaySuggestions(agentRun.suggestions);
+
+      } catch (error) {
+        showError('Failed to load agent run: ' + error.message);
+      }
+    }
+
+    function displayToolCalls(toolCalls) {
+      const container = document.getElementById('tool-calls-container');
+      
+      if (!toolCalls || toolCalls.length === 0) {
+        container.innerHTML = '<p class="text-secondary">No tool calls</p>';
+        return;
+      }
+
+      const tableHTML = `
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Tool Type</th>
+              <th>Tool Name</th>
+              <th>Request</th>
+              <th>Response</th>
+              <th>Status</th>
+              <th>Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${toolCalls.map(tc => `
+              <tr>
+                <td><span class="badge badge-secondary">${formatStatusLabel(tc.tool_type)}</span></td>
+                <td>${escapeHtml(tc.tool_name)}</td>
+                <td>${escapeHtml(truncate(tc.request_summary || 'N/A', 50))}</td>
+                <td>${escapeHtml(truncate(tc.response_summary || 'N/A', 50))}</td>
+                <td><span class="badge ${tc.status === 'success' ? 'badge-success' : 'badge-error'}">${formatStatusLabel(tc.status)}</span></td>
+                <td>${formatDateTime(tc.created_at)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+      
+      container.innerHTML = tableHTML;
+    }
+
+    function displaySuggestions(suggestions) {
+      const container = document.getElementById('suggestions-container');
+      
+      if (!suggestions || suggestions.length === 0) {
+        container.innerHTML = '<p class="text-secondary">No suggestions</p>';
+        return;
+      }
+
+      const tableHTML = `
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Title</th>
+              <th>Description</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${suggestions.map(s => `
+              <tr>
+                <td><span class="badge badge-info">${formatStatusLabel(s.suggestion_type)}</span></td>
+                <td>${escapeHtml(s.title)}</td>
+                <td>${escapeHtml(truncate(s.description || 'N/A', 80))}</td>
+                <td><span class="badge ${getStatusBadgeClass(s.status)}">${formatStatusLabel(s.status)}</span></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+      
+      container.innerHTML = tableHTML;
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function truncate(str, length) {
+      return str.length > length ? str.substring(0, length) + '...' : str;
+    }
+
+    loadAgentRun();
+  </script>
+</body>
+</html>

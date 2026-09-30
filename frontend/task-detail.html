@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task Detail - ProjectFlow AI</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <aside class="sidebar">
+      <div class="sidebar-logo">ProjectFlow AI</div>
+      <nav>
+        <ul class="sidebar-nav">
+          <li><a href="projects.html">📊 Projects</a></li>
+          <li><a href="agent-runs.html">🤖 Agent Runs</a></li>
+          <li><a href="integrations.html">🔗 Integrations</a></li>
+          <li><a href="#" id="logout-btn">🚪 Logout</a></li>
+        </ul>
+      </nav>
+      <div class="mt-lg">
+        <button id="theme-toggle" class="theme-toggle">🌙 Dark</button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="header">
+        <div>
+          <h1 id="task-title">Loading...</h1>
+          <p class="text-secondary">
+            <a href="#" id="project-link">Back to Project</a>
+          </p>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-secondary" id="edit-task-btn">Edit</button>
+          <button class="btn btn-danger" id="delete-task-btn">Delete</button>
+          <button class="btn btn-primary" id="plan-with-ai-btn">🤖 Plan with AI</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">Task Details</div>
+        <div>
+          <p><strong>Description:</strong></p>
+          <p id="task-description" class="text-secondary mb-md">No description</p>
+          
+          <div class="flex flex-gap mb-md">
+            <div>
+              <strong>Status:</strong> <span id="task-status"></span>
+            </div>
+            <div>
+              <strong>Priority:</strong> <span id="task-priority"></span>
+            </div>
+            <div>
+              <strong>Due Date:</strong> <span id="task-due-date">N/A</span>
+            </div>
+          </div>
+          
+          <div class="flex flex-gap">
+            <div>
+              <strong>Created:</strong> <span id="task-created">N/A</span>
+            </div>
+            <div>
+              <strong>Updated:</strong> <span id="task-updated">N/A</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Subtasks -->
+      <div class="card">
+        <div class="card-header">Subtasks</div>
+        <div id="subtasks-container">
+          <p class="text-secondary">No subtasks yet</p>
+        </div>
+      </div>
+
+      <!-- Agent Runs -->
+      <div class="card">
+        <div class="card-header">AI Planning History</div>
+        <div id="agent-runs-container">
+          <p class="text-secondary">No AI planning runs yet</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/theme.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/navigation.js"></script>
+  <script>
+    requireAuth();
+    document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+
+    const taskId = getQueryParam('id');
+    if (!taskId) {
+      window.location.href = 'projects.html';
+    }
+
+    let currentTask = null;
+
+    async function loadTask() {
+      try {
+        currentTask = await api.getTask(taskId);
+        
+        document.getElementById('task-title').textContent = currentTask.title;
+        document.getElementById('task-description').textContent = currentTask.description || 'No description';
+        document.getElementById('task-status').innerHTML = `<span class="badge ${getStatusBadgeClass(currentTask.status)}">${formatStatusLabel(currentTask.status)}</span>`;
+        document.getElementById('task-priority').innerHTML = `<span class="badge ${getPriorityBadgeClass(currentTask.priority)}">${formatStatusLabel(currentTask.priority)}</span>`;
+        document.getElementById('task-due-date').textContent = formatDate(currentTask.due_date);
+        document.getElementById('task-created').textContent = formatDate(currentTask.created_at);
+        document.getElementById('task-updated').textContent = formatDate(currentTask.updated_at);
+        
+        // Update project link
+        document.getElementById('project-link').href = `project-detail.html?id=${currentTask.project_id}`;
+        
+        // Display subtasks
+        displaySubtasks(currentTask.subtasks);
+        
+        // Display agent runs
+        displayAgentRuns(currentTask.agent_runs);
+        
+      } catch (error) {
+        showError('Failed to load task: ' + error.message);
+      }
+    }
+
+    function displaySubtasks(subtasks) {
+      const container = document.getElementById('subtasks-container');
+      
+      if (!subtasks || subtasks.length === 0) {
+        container.innerHTML = '<p class="text-secondary">No subtasks yet</p>';
+        return;
+      }
+
+      const html = `
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Status</th>
+              <th>Source</th>
+              <th>Created</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${subtasks.map(subtask => `
+              <tr>
+                <td>${escapeHtml(subtask.title)}</td>
+                <td><span class="badge ${getStatusBadgeClass(subtask.status)}">${formatStatusLabel(subtask.status)}</span></td>
+                <td><span class="badge ${subtask.source === 'ai' ? 'badge-primary' : 'badge-secondary'}">${subtask.source.toUpperCase()}</span></td>
+                <td>${formatDate(subtask.created_at)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+      
+      container.innerHTML = html;
+    }
+
+    function displayAgentRuns(agentRuns) {
+      const container = document.getElementById('agent-runs-container');
+      
+      if (!agentRuns || agentRuns.length === 0) {
+        container.innerHTML = '<p class="text-secondary">No AI planning runs yet</p>';
+        return;
+      }
+
+      const html = `
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Agent Type</th>
+              <th>Status</th>
+              <th>Duration</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${agentRuns.map(run => `
+              <tr>
+                <td>${formatStatusLabel(run.agent_type)}</td>
+                <td><span class="badge ${getStatusBadgeClass(run.status)}">${formatStatusLabel(run.status)}</span></td>
+                <td>${run.duration_ms ? run.duration_ms + 'ms' : 'N/A'}</td>
+                <td>${formatDateTime(run.created_at)}</td>
+                <td>
+                  <button class="btn btn-sm btn-secondary" onclick="viewAgentRun('${run.id}')">View Details</button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+      
+      container.innerHTML = html;
+    }
+
+    function viewAgentRun(runId) {
+      window.location.href = `agent-run-detail.html?id=${runId}`;
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Event listeners
+    document.getElementById('edit-task-btn').addEventListener('click', () => {
+      window.location.href = `task-form.html?id=${taskId}`;
+    });
+
+    document.getElementById('delete-task-btn').addEventListener('click', async () => {
+      if (!confirm('Are you sure you want to delete this task? This will also delete all subtasks.')) {
+        return;
+      }
+
+      try {
+        await api.deleteTask(taskId);
+        showSuccess('Task deleted successfully!');
+        setTimeout(() => {
+          window.location.href = `project-detail.html?id=${currentTask.project_id}`;
+        }, 1000);
+      } catch (error) {
+        showError('Failed to delete task: ' + error.message);
+      }
+    });
+
+    document.getElementById('plan-with-ai-btn').addEventListener('click', async () => {
+      const context = prompt('Optional: Provide additional context for the AI planning agent:');
+      
+      try {
+        showInfo('Planning agent is working...');
+        const result = await api.planTask(taskId, context || '');
+        
+        // Redirect to AI plan review page
+        window.location.href = `ai-plan-review.html?agent_run_id=${result.agent_run_id}`;
+      } catch (error) {
+        showError('Failed to invoke planning agent: ' + error.message);
+      }
+    });
+
+    loadTask();
+  </script>
+</body>
+</html>
