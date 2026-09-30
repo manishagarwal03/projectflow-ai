@@ -55,3 +55,7 @@ Thumbs.db
 # Don't ignore alembic/ directory but ignore __pycache__
 alembic/__pycache__/
 alembic/versions/__pycache__/
+
+# Vercel local files
+.vercel/
+**/.vercel/
