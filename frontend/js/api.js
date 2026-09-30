@@ -1,6 +1,14 @@
 // API Client for ProjectFlow AI
 
-const API_BASE_URL = 'http://localhost:8000';
+// Dynamic API URL detection for development and production
+const API_BASE_URL = (() => {
+  // Check if we're in development (localhost)
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    return 'http://localhost:8000';
+  }
+  // Production: assume API is at /api path on same domain
+  return window.location.origin + '/api';
+})();
 
 class APIClient {
   constructor(baseURL) {
@@ -36,7 +44,7 @@ class APIClient {
       if (response.status === 401) {
         // Unauthorized - clear token and redirect to login
         localStorage.removeItem('access_token');
-        window.location.href = '/frontend/index.html';
+        window.location.href = '/index.html';
         throw new Error('Unauthorized');
       }
 
