@@ -74,20 +74,33 @@ alembic revision --autogenerate -m "Initial schema"
 alembic upgrade head
 ```
 
-### 6. Start the Backend
+### 6. Start the Servers
+
+#### Option A: Using OpenCode (Recommended)
 
 ```bash
+# If using OpenCode, run this command:
+/run-app
+```
+
+This starts both servers automatically.
+
+#### Option B: Manual Start
+
+**Terminal 1 - Backend:**
+```bash
 # Make sure virtual environment is activated
+cd /Users/manishagarwal/Documents/project-flow/backend
+source venv/bin/activate
 uvicorn app.main:app --reload
 ```
 
 ✅ Backend running at: http://localhost:8000
 
-### 7. Start the Frontend (New Terminal)
-
+**Terminal 2 - Frontend:**
 ```bash
-cd /Users/manishagarwal/Documents/project-flow/frontend
-python3 -m http.server 8080
+cd /Users/manishagarwal/Documents/project-flow
+python3 -m http.server 8080 --directory frontend
 ```
 
 ✅ Frontend running at: http://localhost:8080
@@ -209,6 +222,21 @@ sudo systemctl stop postgresql    # Linux
 
 ## Development Workflow
 
+### With OpenCode
+
+```bash
+# Start both servers
+/run-app
+
+# Generate architecture diagram
+/draw-architecture
+
+# Generate sequence diagram
+/draw-sequence
+```
+
+### Manual
+
 ```bash
 # Terminal 1: Backend
 cd backend
@@ -216,12 +244,43 @@ source venv/bin/activate
 uvicorn app.main:app --reload
 
 # Terminal 2: Frontend
-cd frontend
-python3 -m http.server 8080
+python3 -m http.server 8080 --directory frontend
 
 # Terminal 3: Database operations
 psql projectflow_ai
 ```
+
+## OpenCode Integration
+
+ProjectFlow includes OpenCode integration with:
+
+### MCP Server Setup
+
+```bash
+# 1. Get your JWT token by logging in to the app
+# 2. Configure the MCP server
+cd projectflow-mcp
+cp .env-example .env
+nano .env  # Add your token: PROJECTFLOW_ACCESS_TOKEN=your_token
+
+# 3. MCP is automatically loaded by OpenCode via .opencode/opencode.jsonc
+```
+
+### Available OpenCode Skills
+
+- **run-app**: Start backend and frontend together
+- **draw-architecture**: Generate system architecture diagram
+- **draw-sequence**: Generate user journey sequence diagram
+
+### Available MCP Tools
+
+OpenCode AI can now:
+- List your projects
+- Get project details
+- List tasks in a project
+- Create new tasks
+
+Example: "Create a task in my Website project to implement dark mode"
 
 ---
 

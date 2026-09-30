@@ -225,6 +225,78 @@ Do not introduce a different design system without approval.
 - Preserve existing behavior unless the requirement changes it.
 - Prefer extending existing code over unnecessarily rewriting it.
 
+## OpenCode Skills
+
+ProjectFlow includes custom OpenCode skills for common development tasks:
+
+### Available Skills
+
+1. **run-app** - Start both backend and frontend servers
+   - Usage: `/run-app` 
+   - Starts FastAPI backend on port 8000
+   - Starts frontend static server on port 8080
+   - Runs both in background
+
+2. **draw-architecture** - Generate system architecture diagram
+   - Usage: `/draw-architecture`
+   - Creates draw.io diagram of frontend, backend, and database
+
+3. **draw-sequence** - Generate sequence diagram  
+   - Usage: `/draw-sequence`
+   - Creates Mermaid sequence diagram of main user journey
+
+### When to Use Skills
+
+- Use `run-app` when starting the development environment
+- Use `draw-architecture` when documenting system structure
+- Use `draw-sequence` when documenting user workflows
+- Skills are stored in `.opencode/skills/` directory
+
+## ProjectFlow MCP Server
+
+The project includes a custom MCP server that exposes the ProjectFlow API to OpenCode.
+
+### MCP Server Location
+
+`projectflow-mcp/server.py` - Python-based MCP server
+
+### Available MCP Tools
+
+1. **list_projects()** - List all projects for authenticated user
+2. **get_project(project_id)** - Get specific project details
+3. **list_tasks(project_id)** - List tasks in a project
+4. **create_task(project_id, title, description, priority)** - Create a new task
+
+### MCP Configuration
+
+The MCP server is configured in `.opencode/opencode.jsonc`:
+
+```jsonc
+{
+  "mcp": {
+    "projectflow": {
+      "type": "local",
+      "command": ["./projectflow-mcp/.venv-mcp/bin/mcp", "run", "./projectflow-mcp/server.py"],
+      "enabled": true
+    }
+  }
+}
+```
+
+### MCP Authentication
+
+The MCP server requires a JWT access token:
+1. User must login to get a token
+2. Token is stored in `projectflow-mcp/.env` as `PROJECTFLOW_ACCESS_TOKEN`
+3. Token is passed in Authorization header for all API requests
+
+### When to Use MCP Tools
+
+- OpenCode AI can use these tools automatically when appropriate
+- Useful for reading project context during development
+- Can create tasks based on natural language requests
+- Do not manually call MCP tools unless specifically testing them
+
 ## Verification
 
 After making a change:

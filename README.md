@@ -9,6 +9,8 @@ An AI-powered project and task management workspace that helps teams turn goals 
 - **Human-in-the-Loop**: Review and approve AI recommendations before they modify project data
 - **Agent Traceability**: Complete history of agent runs, tool calls, and suggestions
 - **MCP Integration**: Framework for GitHub integration (stubbed in V1)
+- **OpenCode Integration**: Custom MCP server enables AI-powered development workflows
+- **OpenCode Skills**: Automated tasks like starting servers and generating diagrams
 - **Dark/Light Mode**: User-switchable theme
 - **Responsive Design**: Mobile-first UI that works on phones, tablets, and desktops
 
@@ -139,20 +141,27 @@ The API will be available at: http://localhost:8000
 
 API documentation (Swagger UI): http://localhost:8000/docs
 
-### 8. Start the Frontend
+### 8. Start the Servers
 
-Open a new terminal window:
+#### Option A: Using OpenCode (Recommended)
+
+If you have OpenCode installed:
 
 ```bash
-# Navigate to frontend directory
-cd /Users/manishagarwal/Documents/project-flow/frontend
+# Open the project in OpenCode and run:
+/run-app
+```
 
-# Start a simple HTTP server
-# Python 3:
-python3 -m http.server 8080
+This automatically starts both backend and frontend servers.
 
-# Or Python 2:
-# python -m SimpleHTTPServer 8080
+#### Option B: Manual Start
+
+Open a new terminal window for the frontend:
+
+```bash
+# Start frontend server
+cd /Users/manishagarwal/Documents/project-flow
+python3 -m http.server 8080 --directory frontend
 ```
 
 The frontend will be available at: http://localhost:8080
@@ -263,8 +272,22 @@ project-flow/
 │   ├── agent-runs.html      # Agent run history
 │   ├── agent-run-detail.html # Agent run details
 │   └── integrations.html    # MCP integrations
+├── projectflow-mcp/         # ProjectFlow MCP Server
+│   ├── server.py            # MCP server implementation
+│   ├── requirements.txt     # MCP dependencies
+│   ├── .env-example         # MCP configuration template
+│   └── .venv-mcp/           # MCP virtual environment
+├── .opencode/               # OpenCode configuration
+│   ├── opencode.jsonc       # OpenCode MCP settings
+│   ├── agents/              # Custom OpenCode agents
+│   └── skills/              # Custom OpenCode skills
+│       ├── run-app/         # Start both servers
+│       ├── draw-architecture/ # Generate diagrams
+│       └── draw-sequence/   # Generate sequence diagrams
 ├── AGENTS.md                # Agent instructions
-└── README.md                # This file
+├── README.md                # This file
+├── QUICKSTART.md            # Quick setup guide
+└── IMPLEMENTATION_SUMMARY.md # Implementation details
 ```
 
 ## API Endpoints
@@ -362,6 +385,80 @@ alembic upgrade head
 - Verify SECRET_KEY is set in `.env`
 - Check token expiration (default: 24 hours)
 
+## OpenCode Integration
+
+ProjectFlow includes a custom MCP (Model Context Protocol) server that enables AI-powered development workflows through OpenCode.
+
+### ProjectFlow MCP Server
+
+The MCP server exposes ProjectFlow's API to OpenCode AI agents:
+
+**Available Tools:**
+- `list_projects` - List all projects for the authenticated user
+- `get_project` - Get details of a specific project
+- `list_tasks` - List all tasks in a project
+- `create_task` - Create a new task in a project
+
+**Setup:**
+1. Create a user account and get a JWT token
+2. Copy `projectflow-mcp/.env-example` to `projectflow-mcp/.env`
+3. Add your token: `PROJECTFLOW_ACCESS_TOKEN=your_jwt_token_here`
+4. The MCP server is automatically loaded by OpenCode
+
+**Configuration:**
+
+The MCP server is configured in `.opencode/opencode.jsonc`:
+
+```jsonc
+{
+  "mcp": {
+    "projectflow": {
+      "type": "local",
+      "command": [
+        "./projectflow-mcp/.venv-mcp/bin/mcp",
+        "run",
+        "./projectflow-mcp/server.py"
+      ],
+      "enabled": true
+    }
+  }
+}
+```
+
+### OpenCode Skills
+
+Three custom skills are available:
+
+1. **run-app**: Start both backend and frontend servers with a single command
+   ```
+   /run-app
+   ```
+
+2. **draw-architecture**: Generate a draw.io architecture diagram
+   ```
+   /draw-architecture
+   ```
+
+3. **draw-sequence**: Generate a Mermaid sequence diagram
+   ```
+   /draw-sequence
+   ```
+
+### Using OpenCode with ProjectFlow
+
+With the MCP server running, OpenCode AI can:
+- Read your projects and tasks
+- Create new tasks based on conversation
+- Understand project context for better code suggestions
+- Integrate with development workflows
+
+Example:
+```
+"Create a new task in my 'Website Redesign' project for implementing dark mode"
+```
+
+OpenCode will use the MCP tools to find your project and create the task automatically.
+
 ## Future Enhancements (Out of Scope for V1)
 
 - Research Agent for gathering project context
@@ -374,6 +471,7 @@ alembic upgrade head
 - Background processing for long-running agents
 - Advanced dashboards and analytics
 - Project dependencies and milestones
+- Extended MCP server tools (update/delete operations)
 
 ## License
 

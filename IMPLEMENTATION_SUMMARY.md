@@ -9,6 +9,8 @@
 - **Database**: PostgreSQL with Alembic migrations
 - **Authentication**: JWT tokens with bcrypt
 - **AI Agent**: Rule-based Planning Agent with human-in-the-loop approval
+- **MCP Server**: Custom ProjectFlow MCP server for OpenCode integration
+- **OpenCode Skills**: Automated development workflows with custom skills
 
 ## What Was Built
 
@@ -77,6 +79,28 @@
 - **theme.js** - Dark/light mode toggle
 - **utils.js** - Date formatting, alerts, badges
 - **navigation.js** - Active link highlighting, user info
+
+### ✅ OpenCode Integration
+
+#### OpenCode Skills (3 Total)
+1. **run-app** - Start backend and frontend servers together
+2. **draw-architecture** - Generate draw.io architecture diagrams
+3. **draw-sequence** - Generate Mermaid sequence diagrams
+
+#### ProjectFlow MCP Server
+- **Custom MCP Tools (4)**: 
+  - `list_projects` - List all projects for authenticated user
+  - `get_project` - Get project details by ID
+  - `list_tasks` - List tasks for a project
+  - `create_task` - Create new task in a project
+- **Authentication**: Uses JWT access token from environment
+- **Configuration**: Integrated via `.opencode/opencode.jsonc`
+- **Purpose**: Enables OpenCode AI to interact with ProjectFlow API directly
+
+#### OpenCode Configuration
+- **GitHub MCP**: Remote connection to GitHub Copilot API
+- **ProjectFlow MCP**: Local Python-based MCP server
+- **Agent Instructions**: Custom AGENTS.md for AI development guidance
 
 ## Architectural Decisions (Using Recommended Approaches)
 
@@ -175,14 +199,16 @@
 
 ## File Count
 
-- **Backend Python files**: 35 files
+- **Backend Python files**: 33 files
 - **Frontend HTML pages**: 10 files
 - **Frontend CSS files**: 1 file
 - **Frontend JS files**: 5 files
+- **ProjectFlow MCP Server**: 1 file (server.py)
+- **OpenCode Skills**: 3 skills (run-app, draw-architecture, draw-sequence)
 - **Documentation**: 4 files (README, QUICKSTART, AGENTS, this file)
-- **Configuration**: 5 files (.env.example, requirements.txt, alembic.ini, .gitignore, etc.)
+- **Configuration**: 7 files (.env.example, requirements.txt, alembic.ini, .gitignore, opencode.jsonc, etc.)
 
-**Total: 60+ files**
+**Total: 65+ files**
 
 ## Blueprint Compliance
 
@@ -254,18 +280,29 @@ createdb projectflow_ai
 alembic revision --autogenerate -m "Initial schema"
 alembic upgrade head
 
-# 2. Start Backend (Terminal 1)
+# 2. Start Both Servers (OpenCode)
+# If using OpenCode, simply run:
+# /run-app
+
+# 2. Start Backend (Terminal 1 - Manual)
 cd backend
 source venv/bin/activate
 uvicorn app.main:app --reload
 
-# 3. Start Frontend (Terminal 2)
-cd frontend
-python3 -m http.server 8080
+# 3. Start Frontend (Terminal 2 - Manual)
+python3 -m http.server 8080 --directory frontend
 
 # 4. Open Browser
 # http://localhost:8080
 ```
+
+### Running with OpenCode
+
+If you have OpenCode installed:
+
+1. Open the project in OpenCode
+2. Type `/run-app` to start both servers automatically
+3. Navigate to http://localhost:8080
 
 ## Manual Testing Checklist
 
@@ -351,6 +388,8 @@ The codebase is designed for easy enhancement:
 3. **Stubbed MCP → Real MCP** - Implement actual MCP SDK in `mcp_service.py`
 4. **Single User → Teams** - Add organization_id, team roles
 5. **Static Frontend → React** - API remains unchanged
+6. **OpenCode MCP → Production** - ProjectFlow MCP server already functional
+7. **Additional MCP Tools** - Extend MCP server with update/delete operations
 
 ## Success Metrics
 
